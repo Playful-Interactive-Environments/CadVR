@@ -12,4 +12,9 @@ public class CVR_ThreadHole : MonoBehaviour {
 	void Update () {
 	
 	}
+
+    private void OnTriggerEnter(Collider other)
+    {
+        GetComponent<Collider>().enabled = false;
+    }
 }

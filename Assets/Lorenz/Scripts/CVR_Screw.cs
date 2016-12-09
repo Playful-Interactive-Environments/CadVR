@@ -6,35 +6,48 @@ public class CVR_Screw : MonoBehaviour {
 
     bool engaged;
     Rigidbody rb;
-    Transform screw;
-    Transform threadedHole;
+    VRTK.VRTK_InteractableObject io;
+    public Transform threadedHole;
 
 	// Use this for initialization
 	void Start () {
 
         InitRigidBody();
-        screw = transform.parent.parent;
+        InitInteractable();
         threadedHole = null;
+        //TestKnob();
     }
 	
 	// Update is called once per frame
 	void Update () {
-        //HoldScrew();
+        
 	}
 
     private void InitRigidBody()
     {
-        rb = transform.parent.parent.GetComponent<Rigidbody>();
-        //if (rb == null)
-        //{
-        //    rb = gameObject.AddComponent<Rigidbody>();
-        //}
+        rb = GetComponent<Rigidbody>();
+        if (rb == null)
+        {
+            rb = gameObject.AddComponent<Rigidbody>();
+        }
         rb.isKinematic = false;
         //rb.useGravity = false;
         rb.angularDrag = 10; // otherwise knob will continue to move too far on its own
     }
 
-
+    private void InitInteractable()
+    {
+        io = GetComponent<VRTK.VRTK_InteractableObject>();
+        if (io == null)
+        {
+            io = gameObject.AddComponent<VRTK.VRTK_InteractableObject>();
+        }
+        io.isGrabbable = true;
+        io.precisionSnap = true;
+        io.stayGrabbedOnTeleport = false;
+        io.grabOverrideButton = VRTK.VRTK_ControllerEvents.ButtonAlias.Trigger_Touch;
+        io.grabAttachMechanic = VRTK.VRTK_InteractableObject.GrabAttachType.Track_Object;
+    }
 
     private void OnTriggerEnter(Collider other)
     {
@@ -50,17 +63,10 @@ public class CVR_Screw : MonoBehaviour {
     private void EngageScrew()
     {
         rb.constraints = RigidbodyConstraints.FreezeAll;
-        //rb.constraints -= RigidbodyConstraints.FreezeRotationY;
+        rb.constraints -= RigidbodyConstraints.FreezeRotationZ;
         //rb.constraints -= RigidbodyConstraints.FreezePositionY;
-        rb.transform.rotation = Quaternion.Euler(0, 0, 0);
-        HoldScrew();
-    }
-
-    private void HoldScrew()
-    {
-        if(threadedHole != null)
-        {
-            screw.position = threadedHole.position;
-        }
+        transform.position = threadedHole.position;
+        transform.rotation = threadedHole.rotation;
+        transform.parent = threadedHole.transform;
     }
 }
