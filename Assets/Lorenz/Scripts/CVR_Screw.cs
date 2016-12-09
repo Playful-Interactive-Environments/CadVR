@@ -11,18 +11,30 @@ public class CVR_Screw : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-        
-        rb = transform.parent.parent.GetComponent<Rigidbody>();
+
+        InitRigidBody();
         screw = transform.parent.parent;
         threadedHole = null;
     }
 	
 	// Update is called once per frame
 	void Update () {
-        HoldScrew();
+        //HoldScrew();
 	}
 
-    
+    private void InitRigidBody()
+    {
+        rb = transform.parent.parent.GetComponent<Rigidbody>();
+        //if (rb == null)
+        //{
+        //    rb = gameObject.AddComponent<Rigidbody>();
+        //}
+        rb.isKinematic = false;
+        //rb.useGravity = false;
+        rb.angularDrag = 10; // otherwise knob will continue to move too far on its own
+    }
+
+
 
     private void OnTriggerEnter(Collider other)
     {
@@ -38,8 +50,10 @@ public class CVR_Screw : MonoBehaviour {
     private void EngageScrew()
     {
         rb.constraints = RigidbodyConstraints.FreezeAll;
-        rb.constraints -= RigidbodyConstraints.FreezePositionY;
+        //rb.constraints -= RigidbodyConstraints.FreezeRotationY;
+        //rb.constraints -= RigidbodyConstraints.FreezePositionY;
         rb.transform.rotation = Quaternion.Euler(0, 0, 0);
+        HoldScrew();
     }
 
     private void HoldScrew()
