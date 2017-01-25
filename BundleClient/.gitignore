@@ -1,4 +1,4 @@
-./nuget.exe
+nuget.exe
 
 # Ref: https://gist.github.com/kmorcinek/2710267
 # Download this file using PowerShell v3 under Windows with the following comand
