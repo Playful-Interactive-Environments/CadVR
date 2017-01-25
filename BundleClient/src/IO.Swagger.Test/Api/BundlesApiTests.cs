@@ -84,7 +84,7 @@ namespace IO.Swagger.Test
             // TODO uncomment below to test the method and replace null with proper value
             //string filenameOrUniqueId = null;
             //var response = instance.GetBundle(filenameOrUniqueId);
-            //Assert.IsInstanceOf<FileContents> (response, "response is FileContents");
+            //Assert.IsInstanceOf<byte[]> (response, "response is byte[]");
         }
         
         /// <summary>

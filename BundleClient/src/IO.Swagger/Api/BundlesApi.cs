@@ -51,8 +51,8 @@ namespace IO.Swagger.Api
         /// </remarks>
         /// <exception cref="IO.Swagger.Client.ApiException">Thrown when fails to make API call</exception>
         /// <param name="filenameOrUniqueId">The unique id of the bundle.</param>
-        /// <returns>FileContents</returns>
-        FileContents GetBundle (string filenameOrUniqueId);
+        /// <returns>byte[]</returns>
+        byte[] GetBundle (string filenameOrUniqueId);
 
         /// <summary>
         /// 
@@ -62,8 +62,8 @@ namespace IO.Swagger.Api
         /// </remarks>
         /// <exception cref="IO.Swagger.Client.ApiException">Thrown when fails to make API call</exception>
         /// <param name="filenameOrUniqueId">The unique id of the bundle.</param>
-        /// <returns>ApiResponse of FileContents</returns>
-        ApiResponse<FileContents> GetBundleWithHttpInfo (string filenameOrUniqueId);
+        /// <returns>ApiResponse of byte[]</returns>
+        ApiResponse<byte[]> GetBundleWithHttpInfo (string filenameOrUniqueId);
         /// <summary>
         /// 
         /// </summary>
@@ -143,8 +143,8 @@ namespace IO.Swagger.Api
         /// </remarks>
         /// <exception cref="IO.Swagger.Client.ApiException">Thrown when fails to make API call</exception>
         /// <param name="filenameOrUniqueId">The unique id of the bundle.</param>
-        /// <returns>Task of FileContents</returns>
-        System.Threading.Tasks.Task<FileContents> GetBundleAsync (string filenameOrUniqueId);
+        /// <returns>Task of byte[]</returns>
+        System.Threading.Tasks.Task<byte[]> GetBundleAsync (string filenameOrUniqueId);
 
         /// <summary>
         /// 
@@ -154,8 +154,8 @@ namespace IO.Swagger.Api
         /// </remarks>
         /// <exception cref="IO.Swagger.Client.ApiException">Thrown when fails to make API call</exception>
         /// <param name="filenameOrUniqueId">The unique id of the bundle.</param>
-        /// <returns>Task of ApiResponse (FileContents)</returns>
-        System.Threading.Tasks.Task<ApiResponse<FileContents>> GetBundleAsyncWithHttpInfo (string filenameOrUniqueId);
+        /// <returns>Task of ApiResponse (byte[])</returns>
+        System.Threading.Tasks.Task<ApiResponse<byte[]>> GetBundleAsyncWithHttpInfo (string filenameOrUniqueId);
         /// <summary>
         /// 
         /// </summary>
@@ -465,10 +465,10 @@ namespace IO.Swagger.Api
         /// </summary>
         /// <exception cref="IO.Swagger.Client.ApiException">Thrown when fails to make API call</exception>
         /// <param name="filenameOrUniqueId">The unique id of the bundle.</param>
-        /// <returns>FileContents</returns>
-        public FileContents GetBundle (string filenameOrUniqueId)
+        /// <returns>byte[]</returns>
+        public byte[] GetBundle (string filenameOrUniqueId)
         {
-             ApiResponse<FileContents> localVarResponse = GetBundleWithHttpInfo(filenameOrUniqueId);
+             ApiResponse<byte[]> localVarResponse = GetBundleWithHttpInfo(filenameOrUniqueId);
              return localVarResponse.Data;
         }
 
@@ -477,8 +477,8 @@ namespace IO.Swagger.Api
         /// </summary>
         /// <exception cref="IO.Swagger.Client.ApiException">Thrown when fails to make API call</exception>
         /// <param name="filenameOrUniqueId">The unique id of the bundle.</param>
-        /// <returns>ApiResponse of FileContents</returns>
-        public ApiResponse< FileContents > GetBundleWithHttpInfo (string filenameOrUniqueId)
+        /// <returns>ApiResponse of byte[]</returns>
+        public ApiResponse< byte[] > GetBundleWithHttpInfo (string filenameOrUniqueId)
         {
             // verify the required parameter 'filenameOrUniqueId' is set
             if (filenameOrUniqueId == null)
@@ -511,10 +511,10 @@ namespace IO.Swagger.Api
             localVarPathParams.Add("format", "json");
             if (filenameOrUniqueId != null) localVarPathParams.Add("filenameOrUniqueId", Configuration.ApiClient.ParameterToString(filenameOrUniqueId)); // path parameter
 
-            // authentication (api_key_client) required
-            if (!String.IsNullOrEmpty(Configuration.GetApiKeyWithPrefix("api_key_client")))
+            // authentication (api_key_both) required
+            if (!String.IsNullOrEmpty(Configuration.GetApiKeyWithPrefix("api_key_both")))
             {
-                localVarHeaderParams["api_key_client"] = Configuration.GetApiKeyWithPrefix("api_key_client");
+                localVarHeaderParams["api_key_both"] = Configuration.GetApiKeyWithPrefix("api_key_both");
             }
 
 
@@ -531,9 +531,9 @@ namespace IO.Swagger.Api
                 if (exception != null) throw exception;
             }
 
-            return new ApiResponse<FileContents>(localVarStatusCode,
+            return new ApiResponse<byte[]>(localVarStatusCode,
                 localVarResponse.Headers.ToDictionary(x => x.Name, x => x.Value.ToString()),
-                (FileContents) Configuration.ApiClient.Deserialize(localVarResponse, typeof(FileContents)));
+                (byte[]) Configuration.ApiClient.Deserialize(localVarResponse, typeof(byte[])));
             
         }
 
@@ -542,10 +542,10 @@ namespace IO.Swagger.Api
         /// </summary>
         /// <exception cref="IO.Swagger.Client.ApiException">Thrown when fails to make API call</exception>
         /// <param name="filenameOrUniqueId">The unique id of the bundle.</param>
-        /// <returns>Task of FileContents</returns>
-        public async System.Threading.Tasks.Task<FileContents> GetBundleAsync (string filenameOrUniqueId)
+        /// <returns>Task of byte[]</returns>
+        public async System.Threading.Tasks.Task<byte[]> GetBundleAsync (string filenameOrUniqueId)
         {
-             ApiResponse<FileContents> localVarResponse = await GetBundleAsyncWithHttpInfo(filenameOrUniqueId);
+             ApiResponse<byte[]> localVarResponse = await GetBundleAsyncWithHttpInfo(filenameOrUniqueId);
              return localVarResponse.Data;
 
         }
@@ -555,8 +555,8 @@ namespace IO.Swagger.Api
         /// </summary>
         /// <exception cref="IO.Swagger.Client.ApiException">Thrown when fails to make API call</exception>
         /// <param name="filenameOrUniqueId">The unique id of the bundle.</param>
-        /// <returns>Task of ApiResponse (FileContents)</returns>
-        public async System.Threading.Tasks.Task<ApiResponse<FileContents>> GetBundleAsyncWithHttpInfo (string filenameOrUniqueId)
+        /// <returns>Task of ApiResponse (byte[])</returns>
+        public async System.Threading.Tasks.Task<ApiResponse<byte[]>> GetBundleAsyncWithHttpInfo (string filenameOrUniqueId)
         {
             // verify the required parameter 'filenameOrUniqueId' is set
             if (filenameOrUniqueId == null)
@@ -589,10 +589,10 @@ namespace IO.Swagger.Api
             localVarPathParams.Add("format", "json");
             if (filenameOrUniqueId != null) localVarPathParams.Add("filenameOrUniqueId", Configuration.ApiClient.ParameterToString(filenameOrUniqueId)); // path parameter
 
-            // authentication (api_key_client) required
-            if (!String.IsNullOrEmpty(Configuration.GetApiKeyWithPrefix("api_key_client")))
+            // authentication (api_key_both) required
+            if (!String.IsNullOrEmpty(Configuration.GetApiKeyWithPrefix("api_key_both")))
             {
-                localVarHeaderParams["api_key_client"] = Configuration.GetApiKeyWithPrefix("api_key_client");
+                localVarHeaderParams["api_key_both"] = Configuration.GetApiKeyWithPrefix("api_key_both");
             }
 
             // make the HTTP request
@@ -608,9 +608,9 @@ namespace IO.Swagger.Api
                 if (exception != null) throw exception;
             }
 
-            return new ApiResponse<FileContents>(localVarStatusCode,
+            return new ApiResponse<byte[]>(localVarStatusCode,
                 localVarResponse.Headers.ToDictionary(x => x.Name, x => x.Value.ToString()),
-                (FileContents) Configuration.ApiClient.Deserialize(localVarResponse, typeof(FileContents)));
+                (byte[]) Configuration.ApiClient.Deserialize(localVarResponse, typeof(byte[])));
             
         }
 

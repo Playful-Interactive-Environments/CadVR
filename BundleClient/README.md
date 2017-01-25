@@ -95,7 +95,6 @@ Class | Method | HTTP request | Description
  - [Model.BundleDetails](docs/BundleDetails.md)
  - [Model.BundleList](docs/BundleList.md)
  - [Model.BundleListInner](docs/BundleListInner.md)
- - [Model.FileContents](docs/FileContents.md)
 
 
 <a name="documentation-for-authorization"></a>

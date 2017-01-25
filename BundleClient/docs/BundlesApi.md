@@ -74,7 +74,7 @@ This endpoint does not need any parameter.
 
 <a name="getbundle"></a>
 # **GetBundle**
-> FileContents GetBundle (string filenameOrUniqueId)
+> byte[] GetBundle (string filenameOrUniqueId)
 
 
 
@@ -95,17 +95,17 @@ namespace Example
         public void main()
         {
             
-            // Configure API key authorization: api_key_client
-            Configuration.Default.ApiKey.Add("api_key_client", "YOUR_API_KEY");
+            // Configure API key authorization: api_key_both
+            Configuration.Default.ApiKey.Add("api_key_both", "YOUR_API_KEY");
             // Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-            // Configuration.Default.ApiKeyPrefix.Add("api_key_client", "Bearer");
+            // Configuration.Default.ApiKeyPrefix.Add("api_key_both", "Bearer");
 
             var apiInstance = new BundlesApi();
             var filenameOrUniqueId = filenameOrUniqueId_example;  // string | The unique id of the bundle.
 
             try
             {
-                FileContents result = apiInstance.GetBundle(filenameOrUniqueId);
+                byte[] result = apiInstance.GetBundle(filenameOrUniqueId);
                 Debug.WriteLine(result);
             }
             catch (Exception e)
@@ -125,11 +125,11 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**FileContents**](FileContents.md)
+**byte[]**
 
 ### Authorization
 
-[api_key_client](../README.md#api_key_client)
+[api_key_both](../README.md#api_key_both)
 
 ### HTTP request headers
 
