@@ -1,6 +1,7 @@
 ﻿//========= Copyright 2016, HTC Corporation. All rights reserved. ===========
 
 using HTC.UnityPlugin.PoseTracker;
+using HTC.UnityPlugin.Utility;
 using System;
 using UnityEngine;
 using UnityEngine.Events;
@@ -12,18 +13,29 @@ namespace HTC.UnityPlugin.Vive
     public class VivePoseTracker : BasePoseTracker, INewPoseListener
     {
         [Serializable]
-        public class IsValidChangedEvent : UnityEvent<bool> { }
+        public class UnityEventBool : UnityEvent<bool> { }
+        [Serializable]
+        public class UnityEventUint : UnityEvent<uint> { }
 
         private bool isValid;
 
         public Transform origin;
         public DeviceRole role = DeviceRole.Hmd;
-        public IsValidChangedEvent onIsValidChanged;
+        public UnityEventBool onIsValidChanged;
+
+        public bool isPoseValid { get { return isValid; } }
+
+        protected void SetIsValid(bool value, bool forceSet = false)
+        {
+            if (ChangeProp.Set(ref isValid, value) || forceSet)
+            {
+                onIsValidChanged.Invoke(value);
+            }
+        }
 
         protected virtual void Start()
         {
-            isValid = VivePose.IsValid(role);
-            onIsValidChanged.Invoke(isValid);
+            SetIsValid(false, true);
         }
 
         protected virtual void OnEnable()
@@ -34,6 +46,8 @@ namespace HTC.UnityPlugin.Vive
         protected virtual void OnDisable()
         {
             VivePose.RemoveNewPosesListener(this);
+
+            SetIsValid(false);
         }
 
         public virtual void BeforeNewPoses() { }
@@ -42,12 +56,7 @@ namespace HTC.UnityPlugin.Vive
         {
             TrackPose(VivePose.GetPose(role), origin);
 
-            var isValidCurrent = VivePose.IsValid(role);
-            if (isValid != isValidCurrent)
-            {
-                isValid = isValidCurrent;
-                onIsValidChanged.Invoke(isValid);
-            }
+            SetIsValid(VivePose.IsValid(role));
         }
 
         public virtual void AfterNewPoses() { }

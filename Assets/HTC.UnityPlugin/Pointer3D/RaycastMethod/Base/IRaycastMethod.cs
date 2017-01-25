@@ -9,6 +9,6 @@ namespace HTC.UnityPlugin.Pointer3D
     public interface IRaycastMethod
     {
         bool enabled { get; }
-        void Raycast(BaseRaycaster module, Vector2 position, Camera eventCamera, List<RaycastResult> raycastResults);
+        void Raycast(Ray ray, float distance, List<RaycastResult> raycastResults);
     }
 }

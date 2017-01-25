@@ -7,10 +7,19 @@ using System.Collections.ObjectModel;
 
 namespace HTC.UnityPlugin.Utility
 {
-    public class IndexedSet<T> : IList<T>
+    public interface IIndexedSetReadOnly<T> : IEnumerable<T>
     {
-        private readonly List<T> m_List = new List<T>();
-        private readonly Dictionary<T, int> m_Dictionary = new Dictionary<T, int>();
+        int Count { get; }
+
+        T this[int index] { get; }
+        bool Contains(T item);
+        void CopyTo(T[] array, int arrayIndex);
+    }
+
+    public class IndexedSet<T> : IList<T>, IIndexedSetReadOnly<T>
+    {
+        protected readonly List<T> m_List = new List<T>();
+        protected readonly Dictionary<T, int> m_Dictionary = new Dictionary<T, int>();
 
         public int Count { get { return m_List.Count; } }
 
@@ -35,21 +44,21 @@ namespace HTC.UnityPlugin.Utility
 
         public IEnumerator<T> GetEnumerator()
         {
-            throw new NotImplementedException();
+            return m_List.GetEnumerator();
         }
 
         public void Add(T item)
         {
+            m_Dictionary.Add(item, m_List.Count);
             m_List.Add(item);
-            m_Dictionary.Add(item, m_List.Count - 1);
         }
 
         public bool AddUnique(T item)
         {
             if (m_Dictionary.ContainsKey(item)) { return false; }
 
+            m_Dictionary.Add(item, m_List.Count);
             m_List.Add(item);
-            m_Dictionary.Add(item, m_List.Count - 1);
 
             return true;
         }
@@ -58,7 +67,7 @@ namespace HTC.UnityPlugin.Utility
         {
             int index = -1;
             if (!m_Dictionary.TryGetValue(item, out index)) { return false; }
-
+            //if (index < 0 || index >= m_List.Count) { UnityEngine.Debug.LogError("index=" + index + " " + item); }
             RemoveAt(index);
             return true;
         }
@@ -81,28 +90,27 @@ namespace HTC.UnityPlugin.Utility
 
         public int IndexOf(T item)
         {
-            int index = -1;
-            m_Dictionary.TryGetValue(item, out index);
-            return index;
+            int index;
+            return m_Dictionary.TryGetValue(item, out index) ? index : -1;
         }
 
-        public void Insert(int index, T item)
+        public virtual void Insert(int index, T item)
         {
             throw new NotSupportedException("Not supported, because this container does not guarantee ordering.");
         }
 
-        public void RemoveAt(int index)
+        public virtual void RemoveAt(int index)
         {
-            T item = m_List[index];
-            m_Dictionary.Remove(item);
+            m_Dictionary.Remove(m_List[index]);
+
             if (index == m_List.Count - 1)
             {
                 m_List.RemoveAt(index);
             }
             else
             {
-                int replaceItemIndex = m_List.Count - 1;
-                T replaceItem = m_List[replaceItemIndex];
+                var replaceItemIndex = m_List.Count - 1;
+                var replaceItem = m_List[replaceItemIndex];
                 m_List[index] = replaceItem;
                 m_Dictionary[replaceItem] = index;
                 m_List.RemoveAt(replaceItemIndex);
@@ -111,8 +119,6 @@ namespace HTC.UnityPlugin.Utility
 
         public void RemoveAll(Predicate<T> match)
         {
-            if (match == null) { return; }
-
             var removed = 0;
 
             for (int i = 0, imax = m_List.Count; i < imax; ++i)

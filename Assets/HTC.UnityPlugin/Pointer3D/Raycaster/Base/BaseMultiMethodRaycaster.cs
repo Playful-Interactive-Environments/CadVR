@@ -11,12 +11,7 @@ namespace HTC.UnityPlugin.Pointer3D
     [DisallowMultipleComponent]
     public abstract class BaseMultiMethodRaycaster : BaseRaycaster
     {
-        private readonly IndexedSet<IRaycastMethod> methods = new IndexedSet<IRaycastMethod>();
-
-        [NonSerialized]
-        public readonly List<RaycastResult> sortedRaycastResults = new List<RaycastResult>();
-
-        public bool showDebugRay = true;
+        protected readonly IndexedSet<IRaycastMethod> methods = new IndexedSet<IRaycastMethod>();
 #if UNITY_EDITOR
         protected override void Reset()
         {
@@ -25,21 +20,6 @@ namespace HTC.UnityPlugin.Pointer3D
             if (GetComponent<CanvasRaycastMethod>() == null) { gameObject.AddComponent<CanvasRaycastMethod>(); }
         }
 #endif
-        protected virtual Comparison<RaycastResult> GetRaycasterResultComparer()
-        {
-            return Pointer3DInputModule.defaultRaycastComparer;
-        }
-
-        public RaycastResult FirstRaycastResult()
-        {
-            for (int i = 0, imax = sortedRaycastResults.Count; i < imax; ++i)
-            {
-                if (sortedRaycastResults[i].gameObject == null) { continue; }
-                return sortedRaycastResults[i];
-            }
-            return new RaycastResult();
-        }
-
         public void AddRaycastMethod(IRaycastMethod obj)
         {
             methods.AddUnique(obj);
@@ -50,62 +30,34 @@ namespace HTC.UnityPlugin.Pointer3D
             methods.Remove(obj);
         }
 
-        // should do raycast and store results in SortedRaycastResults
-        public virtual void Raycast(Vector2 screenPosition)
+        protected void ForeachRaycastMethods(Ray ray, float distance, List<RaycastResult> resultAppendList)
         {
-            sortedRaycastResults.Clear();
-            if (eventCamera == null) { return; }
+            var results = ListPool<RaycastResult>.Get();
 
-            for (var i = methods.Count - 1; i >= 0; --i)
+            for (int i = methods.Count - 1; i >= 0; --i)
             {
                 var method = methods[i];
                 if (!method.enabled) { continue; }
-                method.Raycast(this, screenPosition, eventCamera, sortedRaycastResults);
+                method.Raycast(ray, distance, results);
             }
 
             var comparer = GetRaycasterResultComparer();
             if (comparer != null)
             {
-                sortedRaycastResults.Sort(comparer);
+                results.Sort(comparer);
             }
-#if UNITY_EDITOR
-            if (showDebugRay)
+
+            for (int i = 0, imax = results.Count; i < imax; ++i)
             {
-                var ray = eventCamera.ScreenPointToRay(screenPosition);
-                if (sortedRaycastResults.Count > 0)
-                {
-                    Debug.DrawRay(ray.origin, ray.direction * sortedRaycastResults[0].distance, Color.green);
-                }
-                else if (isActiveAndEnabled)
-                {
-                    Debug.DrawRay(ray.origin, ray.direction * (eventCamera.farClipPlane - eventCamera.nearClipPlane), Color.red);
-                }
+                resultAppendList.Add(results[i]);
             }
-#endif
+
+            ListPool<RaycastResult>.Release(results);
         }
 
-        public override void Raycast(PointerEventData eventData, List<RaycastResult> resultAppendList)
+        protected virtual Comparison<RaycastResult> GetRaycasterResultComparer()
         {
-            sortedRaycastResults.Clear();
-            if (eventCamera == null) { return; }
-
-            for (var i = methods.Count - 1; i >= 0; --i)
-            {
-                var method = methods[i];
-                if (!method.enabled) { continue; }
-                method.Raycast(this, eventData.position, eventCamera, sortedRaycastResults);
-            }
-
-            var comparer = GetRaycasterResultComparer();
-            if (comparer != null)
-            {
-                sortedRaycastResults.Sort(comparer);
-            }
-
-            for (int i = 0, imax = sortedRaycastResults.Count; i < imax; ++i)
-            {
-                resultAppendList.Add(sortedRaycastResults[i]);
-            }
+            return Pointer3DInputModule.defaultRaycastComparer;
         }
     }
 }

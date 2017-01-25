@@ -20,8 +20,8 @@ namespace HTC.UnityPlugin.Vive
     {
         private static bool hasFocus;
 
-        private static readonly Pose[] rigidPoses = new Pose[OpenVR.k_unMaxTrackedDeviceCount];
-        private static TrackedDevicePose_t[] poses;
+        private static readonly Pose[] poses = new Pose[OpenVR.k_unMaxTrackedDeviceCount];
+        private static TrackedDevicePose_t[] rawPoses;
 
         private static IndexedSet<INewPoseListener> listeners = new IndexedSet<INewPoseListener>();
 
@@ -46,8 +46,8 @@ namespace HTC.UnityPlugin.Vive
                 OnNewPoses(new TrackedDevicePose_t[OpenVR.k_unMaxTrackedDeviceCount]);
             }
 
-            SteamVR_Utils.Event.Listen("input_focus", OnInputFocus);
-            SteamVR_Utils.Event.Listen("new_poses", OnNewPoses);
+            SteamVR_Events.InputFocusAction(OnInputFocus).Enable(true);
+            SteamVR_Events.NewPosesAction(OnNewPoses).Enable(true);
         }
 
         public static bool AddNewPosesListener(INewPoseListener listener)
@@ -60,36 +60,34 @@ namespace HTC.UnityPlugin.Vive
             return listeners.Remove(listener);
         }
 
-        private static void OnInputFocus(params object[] args)
+        private static void OnInputFocus(bool arg)
         {
-            hasFocus = (bool)args[0];
+            hasFocus = arg;
         }
 
-        private static void OnNewPoses(params object[] args)
+        private static void OnNewPoses(TrackedDevicePose_t[] arg)
         {
             var tempListeners = ListPool<INewPoseListener>.Get();
             tempListeners.AddRange(listeners);
 
-            for (int i = listeners.Count - 1; i >= 0; --i)
+            for (int i = tempListeners.Count - 1; i >= 0; --i)
             {
                 tempListeners[i].BeforeNewPoses();
             }
 
-            poses = (TrackedDevicePose_t[])args[0];
-            for (int i = poses.Length - 1; i >= 0; --i)
+            rawPoses = arg;
+            for (int i = rawPoses.Length - 1; i >= 0; --i)
             {
-                if (!poses[i].bDeviceIsConnected || !poses[i].bPoseIsValid) { continue; }
-                var steamPose = new SteamVR_Utils.RigidTransform(poses[i].mDeviceToAbsoluteTracking);
-                rigidPoses[i].pos = steamPose.pos;
-                rigidPoses[i].rot = steamPose.rot;
+                if (!rawPoses[i].bDeviceIsConnected || !rawPoses[i].bPoseIsValid) { continue; }
+                poses[i] = new Pose(rawPoses[i].mDeviceToAbsoluteTracking);
             }
 
-            for (int i = listeners.Count - 1; i >= 0; --i)
+            for (int i = tempListeners.Count - 1; i >= 0; --i)
             {
                 tempListeners[i].OnNewPoses();
             }
 
-            for (int i = listeners.Count - 1; i >= 0; --i)
+            for (int i = tempListeners.Count - 1; i >= 0; --i)
             {
                 tempListeners[i].AfterNewPoses();
             }

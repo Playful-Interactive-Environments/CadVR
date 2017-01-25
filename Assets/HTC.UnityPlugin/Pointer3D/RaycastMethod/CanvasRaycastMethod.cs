@@ -18,7 +18,7 @@ namespace HTC.UnityPlugin.Pointer3D
 
         public static bool RemoveTarget(ICanvasRaycastTarget obj) { return obj == null ? false : canvases.Remove(obj); }
 
-        public override void Raycast(BaseRaycaster module, Vector2 position, Camera eventCamera, List<RaycastResult> raycastResults)
+        public override void Raycast(Ray ray, float distance, List<RaycastResult> raycastResults)
         {
             var tempCanvases = ListPool<ICanvasRaycastTarget>.Get();
             tempCanvases.AddRange(canvases);
@@ -26,19 +26,21 @@ namespace HTC.UnityPlugin.Pointer3D
             {
                 var target = tempCanvases[i];
                 if (target == null || !target.enabled) { continue; }
-                Raycast(target.canvas, target.ignoreReversedGraphics, module, position, eventCamera, raycastResults);
+                Raycast(target.canvas, target.ignoreReversedGraphics, ray, distance, raycaster, raycastResults);
             }
             ListPool<ICanvasRaycastTarget>.Release(tempCanvases);
         }
 
-        public static void Raycast(Canvas canvas, bool ignoreReversedGraphics, BaseRaycaster module, Vector2 position, Camera eventCamera, List<RaycastResult> raycastResults)
+        public static void Raycast(Canvas canvas, bool ignoreReversedGraphics, Ray ray, float distance, Pointer3DRaycaster raycaster, List<RaycastResult> raycastResults)
         {
             if (canvas == null) { return; }
 
-            var ray = eventCamera.ScreenPointToRay(position);
-            var distance = eventCamera.farClipPlane - eventCamera.nearClipPlane;
-
+            var eventCamera = raycaster.eventCamera;
+            var screenCenterPoint = Pointer3DInputModule.ScreenCenterPoint;
             var graphics = GraphicRegistry.GetGraphicsForCanvas(canvas);
+
+            // Pointer3DRaycaster should set tje eventCamera to correct position
+
             for (int i = 0; i < graphics.Count; ++i)
             {
                 var graphic = graphics[i];
@@ -46,12 +48,13 @@ namespace HTC.UnityPlugin.Pointer3D
                 // -1 means it hasn't been processed by the canvas, which means it isn't actually drawn
                 if (graphic.depth == -1 || !graphic.raycastTarget) { continue; }
 
-                if (!RectTransformUtility.RectangleContainsScreenPoint(graphic.rectTransform, position, eventCamera)) { continue; }
+                if (!RectTransformUtility.RectangleContainsScreenPoint(graphic.rectTransform, screenCenterPoint, eventCamera)) { continue; }
 
-                if (ignoreReversedGraphics && Vector3.Dot(eventCamera.transform.forward, graphic.transform.forward) <= 0f) { continue; }
+                if (ignoreReversedGraphics && Vector3.Dot(ray.direction, graphic.transform.forward) <= 0f) { continue; }
 
-                if (!graphic.Raycast(position, eventCamera)) { continue; }
+                if (!graphic.Raycast(screenCenterPoint, eventCamera)) { continue; }
 
+                //var dist = Vector3.Dot(transForward, trans.position - ray.origin) / Vector3.Dot(transForward, ray.direction);
                 float dist;
                 new Plane(graphic.transform.forward, graphic.transform.position).Raycast(ray, out dist);
                 if (dist > distance) { continue; }
@@ -59,11 +62,11 @@ namespace HTC.UnityPlugin.Pointer3D
                 raycastResults.Add(new RaycastResult
                 {
                     gameObject = graphic.gameObject,
-                    module = module,
+                    module = raycaster,
                     distance = dist,
                     worldPosition = ray.GetPoint(dist),
-                    worldNormal = graphic.transform.forward,
-                    screenPosition = position,
+                    worldNormal = -graphic.transform.forward,
+                    screenPosition = screenCenterPoint,
                     index = raycastResults.Count,
                     depth = graphic.depth,
                     sortingLayer = canvas.sortingLayerID,

@@ -42,6 +42,29 @@ namespace HTC.UnityPlugin.PoseTracker
             }
         }
 
+        public Pose(Valve.VR.HmdMatrix34_t pose)
+        {
+            var m = Matrix4x4.identity;
+
+            m[0, 0] = pose.m0;
+            m[0, 1] = pose.m1;
+            m[0, 2] = -pose.m2;
+            m[0, 3] = pose.m3;
+
+            m[1, 0] = pose.m4;
+            m[1, 1] = pose.m5;
+            m[1, 2] = -pose.m6;
+            m[1, 3] = pose.m7;
+
+            m[2, 0] = -pose.m8;
+            m[2, 1] = -pose.m9;
+            m[2, 2] = pose.m10;
+            m[2, 3] = -pose.m11;
+
+            pos = m.GetPosition();
+            rot = m.GetRotation();
+        }
+
         public override bool Equals(object o)
         {
             if (o is Pose)

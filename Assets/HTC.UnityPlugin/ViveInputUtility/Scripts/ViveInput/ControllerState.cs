@@ -54,7 +54,7 @@ namespace HTC.UnityPlugin.Vive
 
                     CVRSystem system;
                     index = ViveRole.GetDeviceIndex(role);
-                    if (!ViveRole.IsValidIndex(index) || (system = OpenVR.System) == null || !system.GetControllerState(index, ref currentState))
+                    if (!ViveRole.IsValidIndex(index) || (system = OpenVR.System) == null || !system.GetControllerState(index, ref currentState, (uint)System.Runtime.InteropServices.Marshal.SizeOf(typeof(VRControllerState_t))))
                     {
                         currentState = default(VRControllerState_t);
                     }
@@ -274,8 +274,8 @@ namespace HTC.UnityPlugin.Vive
                     case 2: return new Vector2(state.rAxis2.x, state.rAxis2.y);
                     case 3: return new Vector2(state.rAxis3.x, state.rAxis3.y);
                     case 4: return new Vector2(state.rAxis4.x, state.rAxis4.y);
+                    default: return Vector2.zero;
                 }
-                return Vector2.zero;
             }
 
             public float hairTriggerDelta = 0.1f; // amount trigger must be pulled or released to change state
@@ -300,6 +300,7 @@ namespace HTC.UnityPlugin.Vive
                 hairTriggerLimit = hairTriggerState ? Mathf.Max(hairTriggerLimit, value) : Mathf.Min(hairTriggerLimit, value);
             }
 
+            public float GetTriggerValue(bool usePrevState) { Update(); return usePrevState ? previousState.rAxis1.x : currentState.rAxis1.x; }
             public float GetTriggerValue() { Update(); return currentState.rAxis1.x; }
             public bool GetHairTrigger() { Update(); return hairTriggerState; }
             public bool GetHairTriggerDown() { Update(); return hairTriggerState && !hairTriggerPrevState; }
@@ -313,6 +314,16 @@ namespace HTC.UnityPlugin.Vive
             public Vector2 GetPadTouchVector()
             {
                 return GetPress(ControllerButton.PadTouch) ? (GetAxis() - padTouchDownAxis) : Vector2.zero;
+            }
+
+            public VRControllerState_t GetCurrentRawState()
+            {
+                return currentState;
+            }
+
+            public VRControllerState_t GetPreviousRawState()
+            {
+                return previousState;
             }
         }
     }

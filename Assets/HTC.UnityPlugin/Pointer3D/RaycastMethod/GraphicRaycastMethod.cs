@@ -25,9 +25,9 @@ namespace HTC.UnityPlugin.Pointer3D
             }
         }
 #endif
-        public override void Raycast(BaseRaycaster module, Vector2 position, Camera eventCamera, List<RaycastResult> raycastResults)
+        public override void Raycast(Ray ray, float distance, List<RaycastResult> raycastResults)
         {
-            CanvasRaycastMethod.Raycast(canvas, ignoreReversedGraphics, module, position, eventCamera, raycastResults);
+            CanvasRaycastMethod.Raycast(canvas, ignoreReversedGraphics, ray, distance, raycaster, raycastResults);
         }
     }
 }

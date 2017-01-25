@@ -19,7 +19,7 @@ namespace HTC.UnityPlugin.Pointer3D
 
         public readonly StandaloneButton standaloneButton;
 
-        public StandaloneEventData(EventSystem eventSystem, StandaloneButton sbtn, InputButton ibtn) : base(eventSystem)
+        public StandaloneEventData(Pointer3DRaycaster ownerRaycaster, EventSystem eventSystem, StandaloneButton sbtn, InputButton ibtn) : base(ownerRaycaster, eventSystem)
         {
             standaloneButton = sbtn;
             button = ibtn;

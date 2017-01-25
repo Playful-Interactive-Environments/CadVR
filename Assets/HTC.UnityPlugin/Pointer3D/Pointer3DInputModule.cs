@@ -2,6 +2,7 @@
 
 using HTC.UnityPlugin.Utility;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -13,12 +14,20 @@ namespace HTC.UnityPlugin.Pointer3D
         private static bool isApplicationQuitting = false;
 
         private static readonly IndexedSet<Pointer3DRaycaster> raycasters = new IndexedSet<Pointer3DRaycaster>();
+        private static readonly List<Pointer3DRaycaster> processingRaycasters = new List<Pointer3DRaycaster>();
         private static int validEventDataId = PointerInputModule.kFakeTouchesId - 1;
 
         // Pointer3DInputModule has it's own RaycasterManager and Pointer3DRaycaster doesn't share with other input modules.
         // So coexist with other input modules is by default and reasonable?
         public bool coexist = true;
-        public float dragThreshold = 0.005f;
+        [NonSerialized]
+        [Obsolete("Use Pointer3DRaycaster.dragThreshold instead")]
+        public float dragThreshold = 0.02f;
+        [NonSerialized]
+        [Obsolete("Use Pointer3DRaycaster.clickInterval instead")]
+        public float clickInterval = 0.3f;
+
+        public static Vector2 ScreenCenterPoint { get { return new Vector2(Screen.width * 0.5f, Screen.height * 0.5f); } }
 
         public static bool Active { get { return instance != null; } }
 
@@ -29,19 +38,6 @@ namespace HTC.UnityPlugin.Pointer3D
                 Initialize();
                 return instance;
             }
-        }
-
-        public static void AddRaycaster(Pointer3DRaycaster raycaster)
-        {
-            if (raycasters.AddUnique(raycaster))
-            {
-                Initialize();
-            }
-        }
-
-        public static void RemoveRaycasters(Pointer3DRaycaster raycaster)
-        {
-            raycasters.Remove(raycaster);
         }
 
         protected virtual void OnApplicationQuit()
@@ -117,6 +113,15 @@ namespace HTC.UnityPlugin.Pointer3D
         protected override void OnDisable()
         {
             base.OnDisable();
+
+            if (Active)
+            {
+                for (var i = raycasters.Count - 1; i >= 0; --i)
+                {
+                    instance.DisableRaycaster(raycasters[i]);
+                }
+            }
+
             eventSystem.SetSelectedGameObject(null, GetBaseEventData());
         }
 
@@ -170,17 +175,66 @@ namespace HTC.UnityPlugin.Pointer3D
             return lhs.index.CompareTo(rhs.index);
         }
 
+        public static void AddRaycaster(Pointer3DRaycaster raycaster)
+        {
+            if (raycasters.AddUnique(raycaster))
+            {
+                Initialize();
+            }
+        }
+
+        public static void RemoveRaycasters(Pointer3DRaycaster raycaster)
+        {
+            if (raycasters.Remove(raycaster) && Active)
+            {
+                instance.DisableRaycaster(raycaster);
+            }
+        }
+
+        protected void DisableRaycaster(Pointer3DRaycaster raycaster)
+        {
+            if (ReferenceEquals(raycaster, null)) { return; }
+
+            // hover event
+            var hoverEventData = raycaster.HoverEventData;
+            hoverEventData.pointerCurrentRaycast = default(RaycastResult);
+
+            if (hoverEventData.pointerEnter != null)
+            {
+                HandlePointerExitAndEnter(hoverEventData, null);
+            }
+
+            // buttons event
+            for (int i = 0, imax = raycaster.ButtonEventDataList.Count; i < imax; ++i)
+            {
+                var buttonEventData = raycaster.ButtonEventDataList[i];
+                if (buttonEventData == null) { continue; }
+
+                buttonEventData.Reset();
+                buttonEventData.pointerCurrentRaycast = default(RaycastResult);
+
+                ProcessPressUp(buttonEventData);
+
+                if (buttonEventData.pointerEnter != null)
+                {
+                    HandlePointerExitAndEnter(buttonEventData, null);
+                }
+            }
+        }
+
         protected virtual void ProcessRaycast()
         {
-            var screenMidPoint = new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
+            // use another list to iterate raycasters
+            // incase that raycasters may changed during this process cycle
+            processingRaycasters.AddRange(raycasters);
 
-            for (var i = raycasters.Count - 1; i >= 0; --i)
+            for (var i = processingRaycasters.Count - 1; i >= 0; --i)
             {
-                var raycaster = raycasters[i];
+                var raycaster = processingRaycasters[i];
 
-                if (!raycaster.enabled) { continue; }
+                if (raycaster == null || !raycasters.Contains(raycaster)) { continue; }
 
-                raycaster.Raycast(screenMidPoint);
+                raycaster.Raycast();
                 var result = raycaster.FirstRaycastResult();
 
                 // prepare raycaster value
@@ -193,7 +247,7 @@ namespace HTC.UnityPlugin.Pointer3D
                 hoverEventData.Reset();
                 hoverEventData.delta = Vector2.zero;
                 hoverEventData.scrollDelta = scrollDelta;
-                hoverEventData.position = screenMidPoint;
+                hoverEventData.position = ScreenCenterPoint;
                 hoverEventData.pointerCurrentRaycast = result;
 
                 hoverEventData.position3DDelta = raycasterPos - hoverEventData.position3D;
@@ -215,7 +269,7 @@ namespace HTC.UnityPlugin.Pointer3D
                     buttonEventData.Reset();
                     buttonEventData.delta = Vector2.zero;
                     buttonEventData.scrollDelta = scrollDelta;
-                    buttonEventData.position = screenMidPoint;
+                    buttonEventData.position = ScreenCenterPoint;
                     buttonEventData.pointerCurrentRaycast = result;
 
                     buttonEventData.position3DDelta = hoverEventData.position3DDelta;
@@ -225,7 +279,7 @@ namespace HTC.UnityPlugin.Pointer3D
 
                     ProcessPress(buttonEventData);
 
-                    var hoverGO = buttonEventData.GetPress() ? result.gameObject : null;
+                    var hoverGO = buttonEventData.eligibleForClick ? result.gameObject : null;
                     if (buttonEventData.pointerEnter != hoverGO)
                     {
                         HandlePointerExitAndEnter(buttonEventData, hoverGO);
@@ -241,114 +295,132 @@ namespace HTC.UnityPlugin.Pointer3D
                     ExecuteEvents.ExecuteHierarchy(scrollHandler, hoverEventData, ExecuteEvents.scrollHandler);
                 }
             }
+
+            processingRaycasters.Clear();
         }
 
         protected virtual void ProcessPress(Pointer3DEventData eventData)
         {
+            if (!eventData.eligibleForClick)
+            {
+                if (eventData.GetPress())
+                {
+                    ProcessPressDown(eventData);
+                }
+            }
+            else
+            {
+                if (!eventData.GetPress())
+                {
+                    ProcessPressUp(eventData);
+                }
+            }
+        }
+
+        protected void ProcessPressDown(Pointer3DEventData eventData)
+        {
             var currentOverGo = eventData.pointerCurrentRaycast.gameObject;
 
-            if (eventData.GetPressDown())
+            eventData.eligibleForClick = true;
+            eventData.delta = Vector2.zero;
+            eventData.dragging = false;
+            eventData.useDragThreshold = true;
+            eventData.pressPosition = eventData.position;
+            eventData.pressPosition3D = eventData.position3D;
+            eventData.pressRotation = eventData.rotation;
+            eventData.pressDistance = eventData.pointerCurrentRaycast.distance;
+            eventData.pointerPressRaycast = eventData.pointerCurrentRaycast;
+
+            DeselectIfSelectionChanged(currentOverGo, eventData);
+
+            // search for the control that will receive the press
+            // if we can't find a press handler set the press
+            // handler to be what would receive a click.
+            var newPressed = ExecuteEvents.ExecuteHierarchy(currentOverGo, eventData, ExecuteEvents.pointerDownHandler);
+
+            // didnt find a press handler... search for a click handler
+            if (newPressed == null)
             {
-                eventData.eligibleForClick = true;
-                eventData.delta = Vector2.zero;
-                eventData.dragging = false;
-                eventData.useDragThreshold = true;
-                eventData.pressPosition = eventData.position;
-                eventData.pressPosition3D = eventData.position3D;
-                eventData.pressRotation = eventData.rotation;
-                eventData.pressDistance = eventData.pointerCurrentRaycast.distance;
-                eventData.pointerPressRaycast = eventData.pointerCurrentRaycast;
+                newPressed = ExecuteEvents.GetEventHandler<IPointerClickHandler>(currentOverGo);
+            }
 
-                DeselectIfSelectionChanged(currentOverGo, eventData);
+            float time = Time.unscaledTime;
 
-                // search for the control that will receive the press
-                // if we can't find a press handler set the press
-                // handler to be what would receive a click.
-                var newPressed = ExecuteEvents.ExecuteHierarchy(currentOverGo, eventData, ExecuteEvents.pointerDownHandler);
-
-                // didnt find a press handler... search for a click handler
-                if (newPressed == null)
+            if (newPressed == eventData.lastPress)
+            {
+                if (eventData.raycaster != null && time < (eventData.clickTime + eventData.raycaster.clickInterval))
                 {
-                    newPressed = ExecuteEvents.GetEventHandler<IPointerClickHandler>(currentOverGo);
-                }
-
-                float time = Time.unscaledTime;
-
-                if (newPressed == eventData.lastPress)
-                {
-                    var diffTime = time - eventData.clickTime;
-                    if (diffTime < 0.3f)
-                    {
-                        ++eventData.clickCount;
-                    }
-                    else
-                    {
-                        eventData.clickCount = 1;
-                    }
-
-                    eventData.clickTime = time;
+                    ++eventData.clickCount;
                 }
                 else
                 {
                     eventData.clickCount = 1;
                 }
 
-                eventData.pointerPress = newPressed;
-                eventData.rawPointerPress = currentOverGo;
-
                 eventData.clickTime = time;
-
-                // Save the drag handler as well
-                eventData.pointerDrag = ExecuteEvents.GetEventHandler<IDragHandler>(currentOverGo);
-
-                if (eventData.pointerDrag != null)
-                {
-                    ExecuteEvents.Execute(eventData.pointerDrag, eventData, ExecuteEvents.initializePotentialDrag);
-                }
             }
-            else if (eventData.GetPressUp())
+            else
             {
-                GameObject pointerUpHandler = null;
-                if (eventData.pointerPress != null)
-                {
-                    ExecuteEvents.Execute(eventData.pointerPress, eventData, ExecuteEvents.pointerUpHandler);
+                eventData.clickCount = 1;
+            }
 
-                    // see if we mouse up on the same element that we clicked on...
-                    //var pointerUpHandler = ExecuteEvents.GetEventHandler<IPointerClickHandler>(currentOverGo);
-                    pointerUpHandler = ExecuteEvents.GetEventHandler<IPointerClickHandler>(currentOverGo);
+            eventData.pointerPress = newPressed;
+            eventData.rawPointerPress = currentOverGo;
 
-                    if (eventData.pointerPress == pointerUpHandler && eventData.eligibleForClick)
-                    {
-                        ExecuteEvents.Execute(eventData.pointerPress, eventData, ExecuteEvents.pointerClickHandler);
-                    }
-                }
+            eventData.clickTime = time;
 
-                // Drop events
-                if (currentOverGo != null && eventData.pointerDrag != null && eventData.dragging)
-                {
-                    ExecuteEvents.ExecuteHierarchy(currentOverGo, eventData, ExecuteEvents.dropHandler);
-                }
+            // Save the drag handler as well
+            eventData.pointerDrag = ExecuteEvents.GetEventHandler<IDragHandler>(currentOverGo);
 
-                eventData.eligibleForClick = false;
-                eventData.pointerPress = null;
-                eventData.rawPointerPress = null;
-
-                if (eventData.pointerDrag != null && eventData.dragging)
-                {
-                    ExecuteEvents.Execute(eventData.pointerDrag, eventData, ExecuteEvents.endDragHandler);
-                }
-
-                eventData.dragging = false;
-                eventData.pointerDrag = null;
+            if (eventData.pointerDrag != null)
+            {
+                ExecuteEvents.Execute(eventData.pointerDrag, eventData, ExecuteEvents.initializePotentialDrag);
             }
         }
 
-        private bool ShouldStartDrag(Pointer3DEventData eventData)
+        protected void ProcessPressUp(Pointer3DEventData eventData)
         {
-            if (!eventData.useDragThreshold) { return true; }
+            var currentOverGo = eventData.pointerCurrentRaycast.gameObject;
+
+            if (eventData.pointerPress != null)
+            {
+                ExecuteEvents.Execute(eventData.pointerPress, eventData, ExecuteEvents.pointerUpHandler);
+
+                // see if we mouse up on the same element that we clicked on...
+                var pointerUpHandler = ExecuteEvents.GetEventHandler<IPointerClickHandler>(currentOverGo);
+
+                if (eventData.pointerPress == pointerUpHandler && eventData.eligibleForClick)
+                {
+                    ExecuteEvents.Execute(eventData.pointerPress, eventData, ExecuteEvents.pointerClickHandler);
+                }
+            }
+
+            // Drop events
+            if (currentOverGo != null && eventData.pointerDrag != null && eventData.dragging)
+            {
+                ExecuteEvents.ExecuteHierarchy(currentOverGo, eventData, ExecuteEvents.dropHandler);
+            }
+
+            eventData.eligibleForClick = false;
+            eventData.pointerPress = null;
+            eventData.rawPointerPress = null;
+
+            if (eventData.pointerDrag != null && eventData.dragging)
+            {
+                ExecuteEvents.Execute(eventData.pointerDrag, eventData, ExecuteEvents.endDragHandler);
+            }
+
+            eventData.dragging = false;
+            eventData.pointerDrag = null;
+        }
+
+        protected bool ShouldStartDrag(Pointer3DEventData eventData)
+        {
+            if (!eventData.useDragThreshold || eventData.raycaster == null) { return true; }
             var currentPos = eventData.position3D + (eventData.rotation * Vector3.forward) * eventData.pressDistance;
             var pressPos = eventData.pressPosition3D + (eventData.pressRotation * Vector3.forward) * eventData.pressDistance;
-            return (currentPos - pressPos).sqrMagnitude >= dragThreshold * dragThreshold;
+            var threshold = eventData.raycaster.dragThreshold;
+            return (currentPos - pressPos).sqrMagnitude >= threshold * threshold;
         }
 
         protected void ProcessDrag(Pointer3DEventData eventData)

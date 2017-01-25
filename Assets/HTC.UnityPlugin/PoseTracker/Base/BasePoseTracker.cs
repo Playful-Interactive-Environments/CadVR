@@ -7,6 +7,9 @@ namespace HTC.UnityPlugin.PoseTracker
 {
     public abstract class BasePoseTracker : MonoBehaviour, IPoseTracker
     {
+        public Vector3 posOffset;
+        public Vector3 rotOffset;
+
         private readonly Dictionary<IPoseModifier, LinkedListNode<IPoseModifier>> modifierTable = new Dictionary<IPoseModifier, LinkedListNode<IPoseModifier>>();
         private readonly LinkedList<IPoseModifier> modifiers = new LinkedList<IPoseModifier>();
 
@@ -55,11 +58,12 @@ namespace HTC.UnityPlugin.PoseTracker
 
         protected void TrackPose(Pose pose, Transform origin = null)
         {
+            pose = pose * new Pose(posOffset, Quaternion.Euler(rotOffset));
             ModifyPose(ref pose, origin);
             Pose.SetPose(transform, pose, origin);
         }
 
-        private void ModifyPose(ref Pose pose, Transform origin)
+        protected void ModifyPose(ref Pose pose, Transform origin)
         {
             for (var node = modifiers.First; node != null && node.Value != null; node = node.Next)
             {

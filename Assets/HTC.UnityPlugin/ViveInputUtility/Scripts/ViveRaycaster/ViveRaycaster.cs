@@ -28,22 +28,22 @@ namespace HTC.UnityPlugin.Vive
             switch (buttonEventSource)
             {
                 case ButtonEventSource.AllButtons:
-                    buttonEventDataList.Add(new VivePointerEventData(EventSystem.current, HandRole.RightHand, ControllerButton.Trigger, Pointer3DEventData.InputButton.Left));
-                    buttonEventDataList.Add(new VivePointerEventData(EventSystem.current, HandRole.RightHand, ControllerButton.Pad, Pointer3DEventData.InputButton.Middle));
-                    buttonEventDataList.Add(new VivePointerEventData(EventSystem.current, HandRole.RightHand, ControllerButton.Grip, Pointer3DEventData.InputButton.Right));
-                    buttonEventDataList.Add(new VivePointerEventData(EventSystem.current, HandRole.LeftHand, ControllerButton.Trigger, Pointer3DEventData.InputButton.Left));
-                    buttonEventDataList.Add(new VivePointerEventData(EventSystem.current, HandRole.LeftHand, ControllerButton.Pad, Pointer3DEventData.InputButton.Middle));
-                    buttonEventDataList.Add(new VivePointerEventData(EventSystem.current, HandRole.LeftHand, ControllerButton.Grip, Pointer3DEventData.InputButton.Right));
+                    buttonEventDataList.Add(new VivePointerEventData(this, EventSystem.current, HandRole.RightHand, ControllerButton.Trigger, PointerEventData.InputButton.Left));
+                    buttonEventDataList.Add(new VivePointerEventData(this, EventSystem.current, HandRole.RightHand, ControllerButton.Pad, PointerEventData.InputButton.Middle));
+                    buttonEventDataList.Add(new VivePointerEventData(this, EventSystem.current, HandRole.RightHand, ControllerButton.Grip, PointerEventData.InputButton.Right));
+                    buttonEventDataList.Add(new VivePointerEventData(this, EventSystem.current, HandRole.LeftHand, ControllerButton.Trigger, PointerEventData.InputButton.Left));
+                    buttonEventDataList.Add(new VivePointerEventData(this, EventSystem.current, HandRole.LeftHand, ControllerButton.Pad, PointerEventData.InputButton.Middle));
+                    buttonEventDataList.Add(new VivePointerEventData(this, EventSystem.current, HandRole.LeftHand, ControllerButton.Grip, PointerEventData.InputButton.Right));
                     break;
                 case ButtonEventSource.RightHandOnly:
-                    buttonEventDataList.Add(new VivePointerEventData(EventSystem.current, HandRole.RightHand, ControllerButton.Trigger, Pointer3DEventData.InputButton.Left));
-                    buttonEventDataList.Add(new VivePointerEventData(EventSystem.current, HandRole.RightHand, ControllerButton.Pad, Pointer3DEventData.InputButton.Middle));
-                    buttonEventDataList.Add(new VivePointerEventData(EventSystem.current, HandRole.RightHand, ControllerButton.Grip, Pointer3DEventData.InputButton.Right));
+                    buttonEventDataList.Add(new VivePointerEventData(this, EventSystem.current, HandRole.RightHand, ControllerButton.Trigger, PointerEventData.InputButton.Left));
+                    buttonEventDataList.Add(new VivePointerEventData(this, EventSystem.current, HandRole.RightHand, ControllerButton.Pad, PointerEventData.InputButton.Middle));
+                    buttonEventDataList.Add(new VivePointerEventData(this, EventSystem.current, HandRole.RightHand, ControllerButton.Grip, PointerEventData.InputButton.Right));
                     break;
                 case ButtonEventSource.LeftHandOnly:
-                    buttonEventDataList.Add(new VivePointerEventData(EventSystem.current, HandRole.LeftHand, ControllerButton.Trigger, Pointer3DEventData.InputButton.Left));
-                    buttonEventDataList.Add(new VivePointerEventData(EventSystem.current, HandRole.LeftHand, ControllerButton.Pad, Pointer3DEventData.InputButton.Middle));
-                    buttonEventDataList.Add(new VivePointerEventData(EventSystem.current, HandRole.LeftHand, ControllerButton.Grip, Pointer3DEventData.InputButton.Right));
+                    buttonEventDataList.Add(new VivePointerEventData(this, EventSystem.current, HandRole.LeftHand, ControllerButton.Trigger, PointerEventData.InputButton.Left));
+                    buttonEventDataList.Add(new VivePointerEventData(this, EventSystem.current, HandRole.LeftHand, ControllerButton.Pad, PointerEventData.InputButton.Middle));
+                    buttonEventDataList.Add(new VivePointerEventData(this, EventSystem.current, HandRole.LeftHand, ControllerButton.Grip, PointerEventData.InputButton.Right));
                     break;
             }
         }

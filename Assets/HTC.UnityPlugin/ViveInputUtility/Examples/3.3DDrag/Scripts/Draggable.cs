@@ -1,117 +1,126 @@
-﻿using UnityEngine;
+﻿using HTC.UnityPlugin.PoseTracker;
+using HTC.UnityPlugin.Utility;
+using UnityEngine;
 using UnityEngine.EventSystems;
 
-[RequireComponent(typeof(Rigidbody))]
-public class Draggable : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IInitializePotentialDragHandler
+// demonstrate of dragging things useing built in EventSystem handlers
+public class Draggable : MonoBehaviour
+    , IInitializePotentialDragHandler
+    , IBeginDragHandler
+    , IDragHandler
+    , IEndDragHandler
 {
-    public struct Pose
-    {
-        public Vector3 pos;
-        public Quaternion rot;
+    public const float MIN_FOLLOWING_DURATION = 0.02f;
+    public const float DEFAULT_FOLLOWING_DURATION = 0.04f;
+    public const float MAX_FOLLOWING_DURATION = 0.5f;
 
-        public Pose(Vector3 p, Quaternion r) { pos = p; rot = r; }
-
-        public Vector3 InverseTransformPoint(Vector3 point)
-        {
-            return Quaternion.Inverse(rot) * (point - pos);
-        }
-
-        public Vector3 TransformPoint(Vector3 point)
-        {
-            return pos + (rot * point);
-        }
-    }
+    private OrderedIndexedTable<PointerEventData, Pose> eventList = new OrderedIndexedTable<PointerEventData, Pose>();
 
     public float initGrabDistance = 0.5f;
+    [Range(MIN_FOLLOWING_DURATION, MAX_FOLLOWING_DURATION)]
+    public float followingDuration = DEFAULT_FOLLOWING_DURATION;
+    public bool overrideMaxAngularVelocity = true;
 
-    private Rigidbody rigid;
-    private PointerEventData dragEvent;
-    private Camera dragCam;
-    private Vector3 deltaPos;
-    private Quaternion deltaRot;
-
-    private void Awake()
+    private Pose GetEventPose(PointerEventData eventData)
     {
-        rigid = GetComponent<Rigidbody>();
+        var cam = eventData.pointerPressRaycast.module.eventCamera;
+        var ray = cam.ScreenPointToRay(eventData.position);
+        return new Pose(ray.origin, Quaternion.LookRotation(ray.direction, cam.transform.up));
     }
 
     public void OnInitializePotentialDrag(PointerEventData eventData)
     {
-        if (dragEvent == null)
-        {
-            eventData.useDragThreshold = false;
-
-            dragEvent = eventData;
-            dragCam = eventData.pointerPressRaycast.module.eventCamera;
-
-            var eventPose = GetEventPose(eventData.position, dragCam);
-
-            switch (eventData.button)
-            {
-                case PointerEventData.InputButton.Left:
-                    {
-                        deltaPos = eventPose.InverseTransformPoint(transform.position);
-                        deltaRot = Quaternion.Inverse(eventPose.rot) * transform.rotation;
-                        break;
-                    }
-                case PointerEventData.InputButton.Middle:
-                case PointerEventData.InputButton.Right:
-                    {
-                        var distance = eventData.pointerPressRaycast.distance;
-                        var ray = dragCam.ScreenPointToRay(eventData.position);
-                        deltaPos = eventPose.InverseTransformPoint((transform.position - ray.GetPoint(distance)) + ray.GetPoint(Mathf.Min(distance, initGrabDistance)));
-                        deltaRot = Quaternion.Inverse(eventPose.rot) * transform.rotation;
-                        break;
-                    }
-                default:
-                    {
-                        dragEvent = null;
-                        return;
-                    }
-            }
-
-            rigid.velocity = Vector3.zero;
-            rigid.angularVelocity = Vector3.zero;
-        }
+        eventData.useDragThreshold = false;
     }
 
     public void OnBeginDrag(PointerEventData eventData)
     {
+        var casterPose = GetEventPose(eventData);
+        var offsetPose = new Pose();
+        switch (eventData.button)
+        {
+            case PointerEventData.InputButton.Middle:
+            case PointerEventData.InputButton.Right:
+                {
+                    var hitResult = eventData.pointerPressRaycast;
+                    var hitPose = new Pose(hitResult.worldPosition, casterPose.rot);
+
+                    var caster2hit = new Pose(Vector3.forward * Mathf.Min(hitResult.distance, initGrabDistance), Quaternion.identity);
+                    var hit2center = Pose.FromToPose(hitPose, new Pose(transform));
+
+                    offsetPose = caster2hit * hit2center;
+                    break;
+                }
+            case PointerEventData.InputButton.Left:
+            default:
+                {
+                    offsetPose = Pose.FromToPose(casterPose, new Pose(transform));
+                    break;
+                }
+        }
+
+        eventList.AddUniqueKey(eventData, offsetPose);
+    }
+
+    private void FixedUpdate()
+    {
+        PointerEventData eventData;
+        if (!eventList.TryGetLastKey(out eventData)) { return; }
+
+        var rigid = GetComponent<Rigidbody>();
+        if (ReferenceEquals(rigid, null)) { return; }
+
+        // if rigidbody exists, follow eventData caster using physics
+        var casterPose = GetEventPose(eventData);
+        var offsetPose = eventList.GetLastValue();
+        var targetPose = casterPose * offsetPose;
+
+        // applying velocity
+        var diffPos = targetPose.pos - rigid.position;
+        if (Mathf.Approximately(diffPos.sqrMagnitude, 0f))
+        {
+            rigid.velocity = Vector3.zero;
+        }
+        else
+        {
+            rigid.velocity = diffPos / Mathf.Clamp(followingDuration, MIN_FOLLOWING_DURATION, MAX_FOLLOWING_DURATION);
+        }
+
+        // applying angular velocity
+        float angle;
+        Vector3 axis;
+        (targetPose.rot * Quaternion.Inverse(rigid.rotation)).ToAngleAxis(out angle, out axis);
+        while (angle > 360f) { angle -= 360f; }
+
+        if (Mathf.Approximately(angle, 0f) || float.IsNaN(axis.x))
+        {
+            rigid.angularVelocity = Vector3.zero;
+        }
+        else
+        {
+            angle *= Mathf.Deg2Rad / Mathf.Clamp(followingDuration, MIN_FOLLOWING_DURATION, MAX_FOLLOWING_DURATION); // convert to radius speed
+            if (overrideMaxAngularVelocity && rigid.maxAngularVelocity < angle) { rigid.maxAngularVelocity = angle; }
+            rigid.angularVelocity = axis * angle;
+        }
     }
 
     public void OnDrag(PointerEventData eventData)
     {
-        if (dragEvent == eventData)
-        {
-            var eventPose = GetEventPose(eventData.position, dragCam);
+        if (eventList.Count == 0 || !ReferenceEquals(eventData, eventList.GetLastKey())) { return; }
 
-            transform.position = eventPose.TransformPoint(deltaPos);
-            transform.rotation = eventPose.rot * deltaRot;
-        }
+        if (!ReferenceEquals(GetComponent<Rigidbody>(), null)) { return; }
+
+        // if rigidbody doen't exist, just move transform to eventData caster's pose
+        var casterPose = GetEventPose(eventData);
+        var offsetPose = eventList.GetLastValue();
+        var targetPose = casterPose * offsetPose;
+
+        transform.position = targetPose.pos;
+        transform.rotation = targetPose.rot;
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        if (dragEvent == eventData)
-        {
-            var eventPose = GetEventPose(eventData.position, dragCam);
-
-            var dropPose = new Pose(eventPose.TransformPoint(deltaPos), eventPose.rot * deltaRot);
-
-            rigid.AddForce(rigid.mass * (Vector3.ClampMagnitude(dropPose.pos - transform.position, 0.1f)) / Time.deltaTime, ForceMode.Impulse);
-            rigid.AddTorque(rigid.mass * Vector3.Cross(transform.forward, dropPose.rot * Vector3.forward) / Time.deltaTime);
-
-            dragEvent = null;
-            dragCam = null;
-        }
-    }
-
-    public static Pose GetEventPose(Vector2 screenPos, Camera cam)
-    {
-        var pose = new Pose();
-        var ray = cam.ScreenPointToRay(screenPos);
-        pose.pos = ray.origin;
-        pose.rot = Quaternion.LookRotation(ray.direction, cam.transform.up);
-        return pose;
+        eventList.Remove(eventData);
     }
 }

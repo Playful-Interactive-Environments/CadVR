@@ -28,7 +28,7 @@ namespace HTC.UnityPlugin.Vive
         public static bool IsValid(DeviceRole role)
         {
             var index = ViveRole.GetDeviceIndex(role);
-            return index < poses.Length && poses[index].bDeviceIsConnected && poses[index].bPoseIsValid && hasFocus;
+            return index < rawPoses.Length && rawPoses[index].bDeviceIsConnected && rawPoses[index].bPoseIsValid && hasFocus;
         }
 
         /// <summary>
@@ -42,7 +42,7 @@ namespace HTC.UnityPlugin.Vive
         public static bool IsConnected(DeviceRole role)
         {
             var index = ViveRole.GetDeviceIndex(role);
-            return index < poses.Length && poses[index].bDeviceIsConnected;
+            return index < rawPoses.Length && rawPoses[index].bDeviceIsConnected;
         }
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace HTC.UnityPlugin.Vive
         public static bool HasTracking(DeviceRole role)
         {
             var index = ViveRole.GetDeviceIndex(role);
-            return index < poses.Length && poses[index].bPoseIsValid;
+            return index < rawPoses.Length && rawPoses[index].bPoseIsValid;
         }
 
         public static bool IsOutOfRange(HandRole role) { return IsOutOfRange(role.ToDeviceRole()); }
@@ -64,7 +64,7 @@ namespace HTC.UnityPlugin.Vive
         public static bool IsOutOfRange(DeviceRole role)
         {
             var index = ViveRole.GetDeviceIndex(role);
-            return index < poses.Length && (poses[index].eTrackingResult == ETrackingResult.Running_OutOfRange || poses[index].eTrackingResult == ETrackingResult.Calibrating_OutOfRange);
+            return index < rawPoses.Length && (rawPoses[index].eTrackingResult == ETrackingResult.Running_OutOfRange || rawPoses[index].eTrackingResult == ETrackingResult.Calibrating_OutOfRange);
         }
 
         public static bool IsCalibrating(HandRole role) { return IsCalibrating(role.ToDeviceRole()); }
@@ -72,7 +72,7 @@ namespace HTC.UnityPlugin.Vive
         public static bool IsCalibrating(DeviceRole role)
         {
             var index = ViveRole.GetDeviceIndex(role);
-            return index < poses.Length && (poses[index].eTrackingResult == ETrackingResult.Calibrating_InProgress || poses[index].eTrackingResult == ETrackingResult.Calibrating_OutOfRange);
+            return index < rawPoses.Length && (rawPoses[index].eTrackingResult == ETrackingResult.Calibrating_InProgress || rawPoses[index].eTrackingResult == ETrackingResult.Calibrating_OutOfRange);
         }
 
         public static bool IsUninitialized(HandRole role) { return IsUninitialized(role.ToDeviceRole()); }
@@ -80,7 +80,7 @@ namespace HTC.UnityPlugin.Vive
         public static bool IsUninitialized(DeviceRole role)
         {
             var index = ViveRole.GetDeviceIndex(role);
-            return index < poses.Length && poses[index].eTrackingResult == ETrackingResult.Uninitialized;
+            return index < rawPoses.Length && rawPoses[index].eTrackingResult == ETrackingResult.Uninitialized;
         }
 
         public static Vector3 GetVelocity(HandRole role, Transform origin = null) { return GetVelocity(role.ToDeviceRole(), origin); }
@@ -90,9 +90,9 @@ namespace HTC.UnityPlugin.Vive
             var index = ViveRole.GetDeviceIndex(role);
             var rawValue = Vector3.zero;
 
-            if (index < poses.Length)
+            if (index < rawPoses.Length)
             {
-                rawValue = new Vector3(poses[index].vVelocity.v0, poses[index].vVelocity.v1, -poses[index].vVelocity.v2);
+                rawValue = new Vector3(rawPoses[index].vVelocity.v0, rawPoses[index].vVelocity.v1, -rawPoses[index].vVelocity.v2);
             }
 
             return origin == null ? rawValue : origin.TransformVector(rawValue);
@@ -105,9 +105,9 @@ namespace HTC.UnityPlugin.Vive
             var index = ViveRole.GetDeviceIndex(role);
             var rawValue = Vector3.zero;
 
-            if (index < poses.Length)
+            if (index < rawPoses.Length)
             {
-                rawValue = new Vector3(-poses[index].vAngularVelocity.v0, -poses[index].vAngularVelocity.v1, poses[index].vAngularVelocity.v2);
+                rawValue = new Vector3(-rawPoses[index].vAngularVelocity.v0, -rawPoses[index].vAngularVelocity.v1, rawPoses[index].vAngularVelocity.v2);
             }
 
             return origin == null ? rawValue : origin.TransformVector(rawValue);
@@ -126,7 +126,7 @@ namespace HTC.UnityPlugin.Vive
             var index = ViveRole.GetDeviceIndex(role);
             var rawPose = new Pose();
 
-            if (index < rigidPoses.Length) { rawPose = rigidPoses[index]; }
+            if (index < poses.Length) { rawPose = poses[index]; }
 
             if (origin != null)
             {

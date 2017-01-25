@@ -2,6 +2,7 @@
 
 using System;
 using UnityEngine;
+using Valve.VR;
 
 namespace HTC.UnityPlugin.Vive
 {
@@ -55,17 +56,17 @@ namespace HTC.UnityPlugin.Vive
         /// <summary>
         /// Returns raw analog value of the trigger button on the controller identified by role
         /// </summary>
-        public static float GetTriggerValue(HandRole role)
+        public static float GetTriggerValue(HandRole role, bool usePrevState = false)
         {
-            return GetState(role).GetTriggerValue();
+            return GetState(role).GetTriggerValue(usePrevState);
         }
 
         /// <summary>
         /// Returns raw analog value of the touch pad  on the controller identified by role
         /// </summary>
-        public static Vector2 GetPadAxis(HandRole role)
+        public static Vector2 GetPadAxis(HandRole role, bool usePrevState = false)
         {
-            return GetState(role).GetAxis();
+            return GetState(role).GetAxis(usePrevState);
         }
 
         /// <summary>
@@ -186,13 +187,23 @@ namespace HTC.UnityPlugin.Vive
         /// <summary>
         /// Trigger vibration of the controller identified by role
         /// </summary>
-        public static void TriggerHapticPulse(HandRole role, ushort intensity = 500)
+        public static void TriggerHapticPulse(HandRole role, ushort durationMicroSec = 500)
         {
-            var system = Valve.VR.OpenVR.System;
+            var system = OpenVR.System;
             if (system != null)
             {
-                system.TriggerHapticPulse(ViveRole.GetDeviceIndex(role), (uint)Valve.VR.EVRButtonId.k_EButton_SteamVR_Touchpad - (uint)Valve.VR.EVRButtonId.k_EButton_Axis0, (char)intensity);
+                system.TriggerHapticPulse(ViveRole.GetDeviceIndex(role), (uint)EVRButtonId.k_EButton_SteamVR_Touchpad - (uint)EVRButtonId.k_EButton_Axis0, (char)durationMicroSec);
             }
+        }
+
+        public static VRControllerState_t GetCurrentRawControllerState(HandRole role)
+        {
+            return GetState(role).GetCurrentRawState();
+        }
+
+        public static VRControllerState_t GetPreviousRawControllerState(HandRole role)
+        {
+            return GetState(role).GetPreviousRawState();
         }
     }
 }

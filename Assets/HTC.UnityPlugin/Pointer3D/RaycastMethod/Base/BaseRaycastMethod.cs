@@ -6,15 +6,16 @@ using UnityEngine.EventSystems;
 
 namespace HTC.UnityPlugin.Pointer3D
 {
-    [RequireComponent(typeof(BaseMultiMethodRaycaster))]
+    [RequireComponent(typeof(Pointer3DRaycaster))]
     public abstract class BaseRaycastMethod : MonoBehaviour, IRaycastMethod
     {
-        public BaseMultiMethodRaycaster raycaster { get; private set; }
+        private Pointer3DRaycaster m_raycaster;
+        public Pointer3DRaycaster raycaster { get { return m_raycaster; } }
 
-        protected virtual void Awake()
+        protected virtual void Start()
         {
-            raycaster = GetComponent<BaseMultiMethodRaycaster>();
-            raycaster.AddRaycastMethod(this);
+            m_raycaster = GetComponent<Pointer3DRaycaster>();
+            if (m_raycaster != null) { m_raycaster.AddRaycastMethod(this); }
         }
 
         protected virtual void OnEnable() { }
@@ -23,9 +24,10 @@ namespace HTC.UnityPlugin.Pointer3D
 
         protected virtual void OnDestroy()
         {
-            raycaster.RemoveRaycastMethod(this);
+            if (m_raycaster != null) { raycaster.RemoveRaycastMethod(this); }
+            m_raycaster = null;
         }
 
-        public abstract void Raycast(BaseRaycaster module, Vector2 position, Camera eventCamera, List<RaycastResult> raycastResults);
+        public abstract void Raycast(Ray ray, float distance, List<RaycastResult> raycastResults);
     }
 }

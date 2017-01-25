@@ -54,9 +54,10 @@ namespace HTC.UnityPlugin.Pointer3D
 
                 if (fallbackCam == null)
                 {
-                    var go = new GameObject("~FallbackCamera");
+                    var go = new GameObject(name + " FallbackCamera");
                     go.SetActive(false);
-                    go.transform.SetParent(transform);
+                    // place fallback camera at root to preserve world position
+                    //go.transform.SetParent(transform);
                     go.transform.localPosition = Vector3.zero;
                     go.transform.localRotation = Quaternion.identity;
                     go.transform.localScale = Vector3.one;
@@ -70,8 +71,8 @@ namespace HTC.UnityPlugin.Pointer3D
 #if !(UNITY_5_3 || UNITY_5_2 || UNITY_5_1 || UNITY_5_0)
                     fallbackCam.stereoTargetEye = StereoTargetEyeMask.None;
 #endif
-                    NearDistance = nearDistance;
-                    FarDistance = farDistance;
+                    fallbackCam.nearClipPlane = nearDistance;
+                    fallbackCam.farClipPlane = farDistance;
                 }
 
                 return fallbackCam;
@@ -82,6 +83,12 @@ namespace HTC.UnityPlugin.Pointer3D
         {
             base.OnDestroy();
             isDestroying = true;
+
+            if (fallbackCam != null)
+            {
+                Destroy(fallbackCam);
+                fallbackCam = null;
+            }
         }
     }
 }
