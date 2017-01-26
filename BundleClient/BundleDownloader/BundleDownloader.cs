@@ -175,7 +175,7 @@ namespace BundleDownloader
             byte[] fileContents = await bundlesApi.GetBundleAsync(HttpUtility.UrlEncode(uniqueId));
 
             // remove the ugly hard coded ".zip" by the file extension from the file details
-            string destinationPath = Path.Combine(downloadFolder, uniqueId + "zip");
+            string destinationPath = Path.Combine(downloadFolder, uniqueId + ".zip");
             using (FileStream writeStream = System.IO.File.Open(destinationPath, FileMode.Create))
             {
 #if DEBUG

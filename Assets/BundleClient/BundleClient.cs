@@ -30,7 +30,7 @@ public static class BundleClient {
     /// </summary>
     public static OnDownloaderStartedDelegate OnDownloaderStarted;
 
-    public delegate void OnAssetBundleAvailableDelegate(string bundleName, string[] assetNames);
+    public delegate void OnAssetBundleAvailableDelegate(string bundleName);
     /// <summary>
     /// This delegate is invoked from another thread. Make sure you do not directly interacte with the unity api from this delegate. 
     /// </summary>
@@ -55,6 +55,8 @@ public static class BundleClient {
     private static Process downloaderProcess;
     private static Timer recheckTimer = new Timer();
     private static bool bundleFolderFound = false;
+    private static Dictionary<string, string> knownAssetBundles;
+    private static Dictionary<string, AssetBundle> loadedAssetBundles;
 
     static BundleClient()
     {
@@ -72,6 +74,8 @@ public static class BundleClient {
         {
             OnLog("Initializing the bundle client.", LogType.Log);
         }
+
+        knownAssetBundles = new Dictionary<string, string>();
 
         if (!File.Exists(BUNDLE_CLIENT_PATH))
         {
@@ -181,10 +185,17 @@ public static class BundleClient {
 
     private static void OnApplicationQuit()
     {
+        recheckTimer.Enabled = false;
+
         if (!downloaderProcess.HasExited)
         {
             downloaderProcess.Kill();
-            recheckTimer.Enabled = false;
+        }
+
+        foreach (KeyValuePair<string, AssetBundle> loadedAssetBundle in loadedAssetBundles)
+        {
+            loadedAssetBundle.Value.Unload(true);
+            loadedAssetBundles.Remove(loadedAssetBundle.Key);
         }
     }
 
@@ -210,19 +221,99 @@ public static class BundleClient {
             OnLog("Rechecking!");
         }
 
-        string[] files = Directory.GetFiles(BUNDLES_DIRECTORY);
-        if (OnLog != null)
+        string[] directories = Directory.GetDirectories(BUNDLES_DIRECTORY);
+        foreach (string dir in directories)
         {
-            foreach (string file in files)
-            {
-                OnLog("Found File \"" + file + "\".");
-            }
+            HandleDirectory(dir);
         }
     }
 
-    public static AssetBundle GetAssetBundle(string name)
+    private static void HandleDirectory(string dir)
     {
-        return new AssetBundle();
+        string[] files = Directory.GetFiles(dir);
+        foreach (string file in files)
+        {
+            try
+            {
+                if (file.EndsWith(".manifest"))
+                {
+                    string bundleName = file.Replace(".manifest", "");
+                    if (!knownAssetBundles.ContainsKey(bundleName)) {
+                        string bundlePath = Path.Combine(dir, bundleName);
+                        if (File.Exists(bundlePath)) {
+                            if (OnLog != null)
+                            {
+                                OnLog("Found new asset bundle \"" + bundleName + "\".");
+                            }
+                            knownAssetBundles.Add(bundleName, bundlePath);
+                            OnAssetBundleAvailable(bundleName);
+                        }
+                    }
+
+                }
+            } catch
+            {
+                if (OnLog != null)
+                {
+                    OnLog("An exception occured scanning the bundles folder.", LogType.Error);
+                }
+            }
+        }
+    }
+    /// <summary>
+    /// Start this coroutine to asynchronously get an assetbundle.
+    /// Note that the callback will be called synchronously if the assetbundle is already loaded
+    /// </summary>
+    /// <param name="name">The name of the asset bundle</param>
+    /// <param name="assetBundleCb">A callback receiving the loaded asset bundle</param>
+    /// <param name="progressCb">A callback receiving the progress of the load operation every update</param>
+    /// <returns></returns>
+    public static IEnumerator GetAssetBundle(string name, Action<AssetBundle> assetBundleCb, Action<float> progressCb = null)
+    {
+        AssetBundle bundle;
+        if (loadedAssetBundles.TryGetValue(name, out bundle))
+        {
+            assetBundleCb(bundle);
+            yield break;
+        }
+
+        string bundlePath;
+        if (knownAssetBundles.TryGetValue(name, out bundlePath))
+        {
+            AssetBundleCreateRequest request = AssetBundle.LoadFromFileAsync(bundlePath);
+            if (progressCb == null)
+            {   // we don't need to update the progress so wait directly for the request to complete
+                yield return request;
+            }
+            else
+            {   // update progress
+                while (!request.isDone)
+                {
+                    yield return null;
+                    progressCb(request.progress);
+                }
+            }
+
+            // asset successfully loaded
+            assetBundleCb(request.assetBundle);
+        }
+
+        if (OnLog != null)
+        {
+            OnLog("The requested assed bundle could not be found! " +
+                "Are you sure you received the bundle name through the OnAssetBundleAvailable delegate or the GetAvailableAssetBunldes method",
+                LogType.Error);
+        }
     }
 
+    /// <summary>
+    /// Either use the OnAssetBundleAvailable delegate or this method to retrieve information about what asset bundles are available
+    /// </summary>
+    /// <returns>An array of all available asset bundle names that can be passed the GetAssetBundle coroutine</returns>
+    public static string[] GetAvailableAssetBundles()
+    {
+        string[] names = new string[knownAssetBundles.Count];
+        knownAssetBundles.Keys.CopyTo(names, 0);
+        return names;
+    }
 }

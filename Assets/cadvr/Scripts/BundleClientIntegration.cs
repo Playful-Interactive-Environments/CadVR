@@ -13,7 +13,7 @@ public class BundleClientIntegration : MonoBehaviour {
         Debug.Log("The downloader is now running.");
     };
 
-    private static BundleClient.OnAssetBundleAvailableDelegate defaultOnAssetBundleAvailableHandler = (bundleName, assetNames) =>
+    private static BundleClient.OnAssetBundleAvailableDelegate defaultOnAssetBundleAvailableHandler = (bundleName) =>
     {
         Debug.Log("A new asset bundle is availabel: \"" + bundleName + "\".");
     };
@@ -29,7 +29,7 @@ public class BundleClientIntegration : MonoBehaviour {
 
     private void Awake()
     {
-       // InitBundleClient();
+
     }
 
     // Use this for initialization
