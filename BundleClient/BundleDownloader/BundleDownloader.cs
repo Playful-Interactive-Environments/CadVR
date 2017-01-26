@@ -1,15 +1,13 @@
 ﻿using IO.Swagger.Api;
 using IO.Swagger.Client;
 using IO.Swagger.Model;
-using Newtonsoft.Json.Linq;
 using RestSharp;
 using RestSharp.Contrib;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
+using System.IO.Compression;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
 
@@ -175,7 +173,9 @@ namespace BundleDownloader
 
             // the actual download api call
             byte[] fileContents = await bundlesApi.GetBundleAsync(HttpUtility.UrlEncode(uniqueId));
-            string destinationPath = Path.Combine(downloadFolder, uniqueId);
+
+            // remove the ugly hard coded ".zip" by the file extension from the file details
+            string destinationPath = Path.Combine(downloadFolder, uniqueId + "zip");
             using (FileStream writeStream = System.IO.File.Open(destinationPath, FileMode.Create))
             {
 #if DEBUG
@@ -183,6 +183,9 @@ namespace BundleDownloader
 #endif
                 await writeStream.WriteAsync(fileContents, 0, fileContents.Length);
             }
+            // TODO: move the unzip functionality to another place and control it by adding retrieving the bunlde details with the file extension
+            // TODO: before unzipping
+            ZipFile.ExtractToDirectory(destinationPath, Path.Combine(downloadFolder, uniqueId));
 
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("Bundle download succeeded! (" + bundleEntry.uniqueId + ")");
