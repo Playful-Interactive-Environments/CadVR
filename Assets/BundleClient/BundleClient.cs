@@ -10,7 +10,7 @@ using UnityEngine;
 public static class BundleClient {
 
     public const string BUNDLES_DIRECTORY = "./bundles";
-    public const string BUNDLE_CLIENT_PATH = "./BundleDownloader.exe";
+    public const string BUNDLE_CLIENT_PATH = "./bin/BundleDownloader.exe";
 
     // this MonoBehaviour is automatically instantiated to manage lifecycle
     private class BundleClientManager : MonoBehaviour
@@ -36,7 +36,7 @@ public static class BundleClient {
     /// <summary>
     /// The interval to pool for new asset bundles in seconds
     /// </summary>
-    public static float PollFrequency { get { return (float)(recheckTimer.Interval * 0.01); } set {recheckTimer.Interval = value * 100;} }
+    public static float PollFrequency { get { return (float)(recheckTimer.Interval * 0.001); } set {recheckTimer.Interval = value * 1000;} }
     /// <summary>
     /// Should the output of the downloader be logged to the OnLog delegate?
     /// </summary>
@@ -53,7 +53,7 @@ public static class BundleClient {
     static BundleClient()
     {
         // default poll frequency to 2s
-        recheckTimer.Interval = 200;
+        PollFrequency = 2;
     }
 
     /// <summary>
@@ -85,7 +85,6 @@ public static class BundleClient {
         bundleFolderFound = false;
 
         recheckTimer.AutoReset = true;
-        recheckTimer.Interval = PollFrequency;
         recheckTimer.Elapsed += Recheck;
         // configure how the bundle downloader will run
         ProcessStartInfo startInfo = new ProcessStartInfo();
@@ -93,9 +92,10 @@ public static class BundleClient {
         startInfo.UseShellExecute = false; // must be false if redirect standard output is true
         startInfo.RedirectStandardOutput = true;
         startInfo.RedirectStandardError = true;
-        startInfo.FileName = "BundleDownloader.exe";
-        startInfo.WindowStyle = ProcessWindowStyle.Normal;
-        startInfo.Arguments = "";
+        startInfo.FileName = BUNDLE_CLIENT_PATH;
+        startInfo.WindowStyle = ProcessWindowStyle.Hidden;
+        startInfo.WorkingDirectory = Path.GetDirectoryName(BUNDLE_CLIENT_PATH);
+        //startInfo.Arguments = "";
 
         try
         {
@@ -113,13 +113,13 @@ public static class BundleClient {
         }
         catch (Exception e)
         {
-            if (OnLog != null)
-            {
-                OnLog("An exception occurred when starting the bundle downloader. The process could not be started!", LogType.Exception);
-            }
-
             if (e is InvalidOperationException || e is ArgumentNullException || e is ObjectDisposedException || e is FileNotFoundException || e is Win32Exception)
             {
+                if (OnLog != null)
+                {
+                    OnLog("An exception occurred when starting the bundle downloader. The process could not be started:\n" + 
+                        e.ToString(), LogType.Exception);
+                }
                 return;
             }
 
@@ -161,8 +161,7 @@ public static class BundleClient {
         if (OnLog != null)
         {
             OnLog("Bundle downloader exited at: " + downloaderProcess.ExitTime +
-                "\r\n With Exit code: " + downloaderProcess.ExitCode,
-                LogType.Log);
+                "\r\n With Exit code: " + downloaderProcess.ExitCode);
         }
     }
 
@@ -179,6 +178,7 @@ public static class BundleClient {
         if (!downloaderProcess.HasExited)
         {
             downloaderProcess.Kill();
+            recheckTimer.Enabled = false;
         }
     }
 

@@ -16,9 +16,10 @@ public class Test : MonoBehaviour {
 
     private static BundleClient.OnAssetBundleAvailableDelegate defaultOnAssetBundleAvailableHandler = (bundleName, assetNames) =>
     {
-
+        Debug.Log("A new asset bundle is availabel: \"" + bundleName + "\".");
     };
 
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void InitBundleClient()
     {
         BundleClient.OnLog += defautlbundleClientLogger;
@@ -29,7 +30,7 @@ public class Test : MonoBehaviour {
 
     private void Awake()
     {
-        InitBundleClient();
+       // InitBundleClient();
     }
 
     // Use this for initialization

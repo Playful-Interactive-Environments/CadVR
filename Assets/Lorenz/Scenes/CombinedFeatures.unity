@@ -1763,7 +1763,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 22469982, guid: 6b9dbb125b47726449ffe47a4110f342, type: 2}
       propertyPath: m_AnchoredPosition.x
-      value: 0.11
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 22469982, guid: 6b9dbb125b47726449ffe47a4110f342, type: 2}
       propertyPath: m_AnchoredPosition.y
@@ -1771,7 +1771,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 22469982, guid: 6b9dbb125b47726449ffe47a4110f342, type: 2}
       propertyPath: m_SizeDelta.x
-      value: 640
+      value: 1201.547
       objectReference: {fileID: 0}
     - target: {fileID: 22469982, guid: 6b9dbb125b47726449ffe47a4110f342, type: 2}
       propertyPath: m_SizeDelta.y
@@ -1801,37 +1801,37 @@ Prefab:
       propertyPath: m_Pivot.y
       value: 0.5
       objectReference: {fileID: 0}
+    - target: {fileID: 160868, guid: 6b9dbb125b47726449ffe47a4110f342, type: 2}
+      propertyPath: m_Name
+      value: ConsoleViewerCanvas (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 22484078, guid: 6b9dbb125b47726449ffe47a4110f342, type: 2}
+      propertyPath: m_AnchorMin.y
+      value: 0.086393096
+      objectReference: {fileID: 0}
+    - target: {fileID: 22484078, guid: 6b9dbb125b47726449ffe47a4110f342, type: 2}
+      propertyPath: m_AnchorMax.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 22484078, guid: 6b9dbb125b47726449ffe47a4110f342, type: 2}
+      propertyPath: m_AnchorMax.y
+      value: 0.9071274
+      objectReference: {fileID: 0}
+    - target: {fileID: 22408864, guid: 6b9dbb125b47726449ffe47a4110f342, type: 2}
+      propertyPath: m_AnchorMax.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 22408864, guid: 6b9dbb125b47726449ffe47a4110f342, type: 2}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 133038, guid: 6b9dbb125b47726449ffe47a4110f342, type: 2}
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 22482256, guid: 6b9dbb125b47726449ffe47a4110f342, type: 2}
-      propertyPath: m_AnchoredPosition.x
-      value: -0.000091552734
-      objectReference: {fileID: 0}
     - target: {fileID: 117788, guid: 6b9dbb125b47726449ffe47a4110f342, type: 2}
       propertyPath: m_IsActive
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 11416238, guid: 6b9dbb125b47726449ffe47a4110f342, type: 2}
-      propertyPath: m_Value
-      value: 0.0000042582546
-      objectReference: {fileID: 0}
-    - target: {fileID: 11416238, guid: 6b9dbb125b47726449ffe47a4110f342, type: 2}
-      propertyPath: m_Size
-      value: 0.93097895
-      objectReference: {fileID: 0}
-    - target: {fileID: 11440894, guid: 6b9dbb125b47726449ffe47a4110f342, type: 2}
-      propertyPath: m_Value
-      value: 0.48192772
-      objectReference: {fileID: 0}
-    - target: {fileID: 11440894, guid: 6b9dbb125b47726449ffe47a4110f342, type: 2}
-      propertyPath: m_Size
-      value: 0.8207343
-      objectReference: {fileID: 0}
-    - target: {fileID: 160868, guid: 6b9dbb125b47726449ffe47a4110f342, type: 2}
-      propertyPath: m_Name
-      value: ConsoleViewerCanvas (1)
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 6b9dbb125b47726449ffe47a4110f342, type: 2}

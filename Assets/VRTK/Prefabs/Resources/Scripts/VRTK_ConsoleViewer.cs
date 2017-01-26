@@ -36,6 +36,7 @@ namespace VRTK
         private int lineBuffer = 50;
         private int currentBuffer;
         private string lastMessage;
+        private string logOutputThreaded = "";
         private bool collapseLog = false;
 
         /// <summary>
@@ -77,13 +78,38 @@ namespace VRTK
 
         private void OnEnable()
         {
-            Application.logMessageReceived += HandleLog;
+            Application.logMessageReceivedThreaded += HandleLogThreaded;
         }
 
         private void OnDisable()
         {
-            Application.logMessageReceived -= HandleLog;
+            Application.logMessageReceivedThreaded -= HandleLogThreaded;
             consoleRect.sizeDelta = Vector2.zero;
+        }
+
+
+
+        private void HandleLogThreaded(string message, string stackTrace, LogType type)
+        {
+            // buffer logOutput
+            string output = GetMessage(message, type);
+
+            if (!collapseLog || lastMessage != output)
+            {
+                logOutputThreaded += output;
+                lastMessage = output;
+            }
+        }
+
+        private void Update()
+        {
+            // handle buffered log output
+            if (logOutputThreaded != "")
+            {
+                string output = logOutputThreaded;
+                logOutputThreaded = "";
+                UpdateLogWindow(output);
+            }
         }
 
         private string GetMessage(string message, LogType type)
@@ -92,16 +118,9 @@ namespace VRTK
             return "<color=#" + color + ">" + message + "</color>" + NEWLINE;
         }
 
-        private void HandleLog(string message, string stackTrace, LogType type)
+        private void UpdateLogWindow(string bufferedLogOutput)
         {
-            var logOutput = GetMessage(message, type);
-
-            if (!collapseLog || lastMessage != logOutput)
-            {
-                consoleOutput.text += logOutput;
-                lastMessage = logOutput;
-            }
-
+            consoleOutput.text += bufferedLogOutput;
             consoleRect.sizeDelta = new Vector2(consoleOutput.preferredWidth, consoleOutput.preferredHeight);
             scrollWindow.verticalNormalizedPosition = 0;
             currentBuffer++;
