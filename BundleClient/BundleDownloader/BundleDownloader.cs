@@ -127,14 +127,14 @@ namespace BundleDownloader
 #endif
             // stop rechecking continously during processing the directory
             recheckTimer.Enabled = false;
-
-            BundleList availableBundles = await bundlesApi.GetAvailableBundlesAsync();
-
-            List<Task> runningTasks = new List<Task>();
-            // iterate over all available bundles
-            availableBundles.ForEach( bundle => runningTasks.Add(HandleBundle(bundle)));
             try
             {
+                BundleList availableBundles = await bundlesApi.GetAvailableBundlesAsync();
+
+                List<Task> runningTasks = new List<Task>();
+                // iterate over all available bundles
+                availableBundles.ForEach( bundle => runningTasks.Add(HandleBundle(bundle)));
+
                 // wait for recheck and downloads to complete before signaling completion back to the main thread
                 await Task.WhenAll(runningTasks);
             }
