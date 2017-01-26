@@ -93,7 +93,7 @@ public static class BundleClient {
         startInfo.RedirectStandardOutput = true;
         startInfo.RedirectStandardError = true;
         startInfo.FileName = BUNDLE_CLIENT_PATH;
-        startInfo.WindowStyle = ProcessWindowStyle.Hidden;
+        startInfo.CreateNoWindow = true;
         startInfo.WorkingDirectory = Path.GetDirectoryName(BUNDLE_CLIENT_PATH);
         //startInfo.Arguments = "";
 
