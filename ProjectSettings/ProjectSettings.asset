@@ -431,7 +431,8 @@ PlayerSettings:
   webGLUseEmbeddedResources: 0
   webGLUseWasm: 0
   webGLCompressionFormat: 1
-  scriptingDefineSymbols: {}
+  scriptingDefineSymbols:
+    1: VRTK_SDK_STEAMVR
   platformArchitecture: {}
   scriptingBackend:
     Android: 0

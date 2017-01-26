@@ -100,7 +100,7 @@ namespace BundleDownloader
                     catch (ApiException e)
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine(
+                        Console.Error.WriteLine(
                             "An Api Exception occured:\n\tMessage: " + e.Message +
                             "\n\tHTTP Status Code: " + e.ErrorCode +
                             "\n\tBody: " + e.ErrorContent

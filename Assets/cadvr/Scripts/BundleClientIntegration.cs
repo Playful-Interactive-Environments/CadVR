@@ -1,8 +1,7 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
+
 [AddComponentMenu("Cad Vr/Test")]
-public class Test : MonoBehaviour {
+public class BundleClientIntegration : MonoBehaviour {
 
     private static BundleClient.OnLogDelegate defautlbundleClientLogger = (string msg, LogType logType) =>
     {

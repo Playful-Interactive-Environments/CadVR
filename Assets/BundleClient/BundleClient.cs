@@ -25,9 +25,15 @@ public static class BundleClient {
 
 
     public delegate void OnDownloaderStartedDelegate();
+    /// <summary>
+    /// This delegate is invoked from another thread. Make sure you do not directly interacte with the unity api from this delegate. 
+    /// </summary>
     public static OnDownloaderStartedDelegate OnDownloaderStarted;
 
     public delegate void OnAssetBundleAvailableDelegate(string bundleName, string[] assetNames);
+    /// <summary>
+    /// This delegate is invoked from another thread. Make sure you do not directly interacte with the unity api from this delegate. 
+    /// </summary>
     public static OnAssetBundleAvailableDelegate OnAssetBundleAvailable;
 
     public delegate void OnLogDelegate(string msg, LogType type = LogType.Log);
