@@ -3,7 +3,7 @@
   "basePath":  "https://localhost:3001/v1",
   "downloadFolder": "../bundles",
   "apiPwd": "geheim",
-  "timeout":  1000,
+  "timeout":  10000,
   "crt": {
         "cert": "./crt/client1-crt.pem",    //  client certificate
         "requestCert": false,             //  whether to request a client certificate

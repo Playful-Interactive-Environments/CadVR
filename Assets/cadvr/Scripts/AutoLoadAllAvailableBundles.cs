@@ -20,8 +20,10 @@ public class AutoLoadAllAvailableBundles : MonoBehaviour {
     {
         while (assetBundlesToLoad.Count != 0)
         {
-            Debug.Log("loading");
-            StartCoroutine(BundleClient.GetAssetBundle(assetBundlesToLoad.Dequeue(), receiveAssetBundle));
+            string bundle = assetBundlesToLoad.Dequeue();
+            StartCoroutine(BundleClient.GetAssetBundle(bundle, receiveAssetBundle, (progress) => {
+                Debug.Log(Mathf.RoundToInt(progress * 100) + "% Loading Progress (Bundle: \"" + bundle + "\")");
+            }));
         }
     }
 

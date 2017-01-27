@@ -8,7 +8,7 @@ using UnityEngine.UI;
 public class GameObjectList : MonoBehaviour {
 
     public delegate void OnSelectedDelegate(GameObject selectedGameObject);
-    OnSelectedDelegate OnSelected;
+    public OnSelectedDelegate OnSelected;
 
     [SerializeField]
     private AutoLoadAllAvailableBundles autoLoader;

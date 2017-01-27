@@ -1,8 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BundleDownloader
 {
@@ -13,6 +10,7 @@ namespace BundleDownloader
             public string originalFilename = "";
             public string uniqueId = "";
 
+            [JsonConstructor]
             public BundleEntry(string displayName, string uniqueId)
             {
                 // the human readable name
