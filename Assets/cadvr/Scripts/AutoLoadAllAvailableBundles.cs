@@ -7,6 +7,9 @@ public class AutoLoadAllAvailableBundles : MonoBehaviour {
     public delegate void OnGameObjectLoadedDelegate(GameObject go);
     public OnGameObjectLoadedDelegate OnGameObjectLoaded;
 
+    [SerializeField]
+    private List<BaseGameObjectProcessor> preprocessors = new List<BaseGameObjectProcessor>();
+
     private Queue<string> assetBundlesToLoad = new Queue<string>();
 
 	void Awake () {
@@ -40,7 +43,12 @@ public class AutoLoadAllAvailableBundles : MonoBehaviour {
         {
             if (asset is GameObject && OnGameObjectLoaded != null)
             {
-                OnGameObjectLoaded(asset as GameObject);
+                GameObject go = asset as GameObject;
+                foreach (BaseGameObjectProcessor processor in preprocessors)
+                {
+                    processor.Process(go);
+                }
+                OnGameObjectLoaded(go);
             }
         }
     }
