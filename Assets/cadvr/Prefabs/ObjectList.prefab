@@ -130,6 +130,7 @@ GameObject:
   - component: {fileID: 114618841010121108}
   - component: {fileID: 114479174866280312}
   - component: {fileID: 114173706204792544}
+  - component: {fileID: 114862867752056496}
   m_Layer: 5
   m_Name: ObjectList
   m_TagString: Untagged
@@ -266,7 +267,7 @@ MonoBehaviour:
   validDrop: 1
   grabOverrideButton: 0
   allowedGrabControllers: 0
-  grabAttachMechanicScript: {fileID: 0}
+  grabAttachMechanicScript: {fileID: 114862867752056496}
   secondaryGrabActionScript: {fileID: 0}
   isUsable: 0
   holdButtonToUse: 1
@@ -415,7 +416,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 114687591980295478}
   m_HandleRect: {fileID: 224839431421571874}
   m_Direction: 2
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -488,7 +489,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 114956725777161838}
   m_HandleRect: {fileID: 224489101768942202}
   m_Direction: 0
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -597,6 +598,25 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.UI.ScrollRect+ScrollRectEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
+--- !u!114 &114862867752056496
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1658014722702518}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8afa0b205791c9f4496bf2814aeac078, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  precisionGrab: 0
+  rightSnapHandle: {fileID: 0}
+  leftSnapHandle: {fileID: 0}
+  throwVelocityWithAttachDistance: 0
+  throwMultiplier: 1
+  onGrabCollisionDelay: 0
+  destroyImmediatelyOnThrow: 1
+  breakForce: 1500
 --- !u!114 &114864441336536914
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -941,18 +961,18 @@ RectTransform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1658014722702518}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -2.26}
+  m_LocalRotation: {x: 0.026844388, y: 0.97307813, z: -0.15551606, w: 0.16796775}
+  m_LocalPosition: {x: 0, y: 0, z: -0.822}
   m_LocalScale: {x: 0.001, y: 0.001, z: 0.001}
   m_Children:
   - {fileID: 224523323588215462}
   - {fileID: 224166192402411812}
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 18.160002, y: 160.41301, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 2.13, y: 0.304}
+  m_AnchoredPosition: {x: 0.324, y: 0.333}
   m_SizeDelta: {x: 620.268, y: 480}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &224839431421571874
