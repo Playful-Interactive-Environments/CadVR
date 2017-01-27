@@ -76,7 +76,7 @@ public static class BundleClient {
         }
 
         knownAssetBundles = new Dictionary<string, string>();
-
+        loadedAssetBundles = new Dictionary<string, AssetBundle>();
         if (!File.Exists(BUNDLE_CLIENT_PATH))
         {
             if (OnLog != null)
@@ -237,7 +237,7 @@ public static class BundleClient {
             {
                 if (file.EndsWith(".manifest"))
                 {
-                    string bundleName = file.Replace(".manifest", "");
+                    string bundleName = Path.GetFileNameWithoutExtension(file);
                     if (!knownAssetBundles.ContainsKey(bundleName)) {
                         string bundlePath = Path.Combine(dir, bundleName);
                         if (File.Exists(bundlePath)) {
@@ -296,13 +296,14 @@ public static class BundleClient {
 
             // asset successfully loaded
             assetBundleCb(request.assetBundle);
-        }
-
-        if (OnLog != null)
+        } else
         {
-            OnLog("The requested assed bundle could not be found! " +
-                "Are you sure you received the bundle name through the OnAssetBundleAvailable delegate or the GetAvailableAssetBunldes method",
-                LogType.Error);
+            if (OnLog != null)
+            {
+                OnLog("The requested assed bundle could not be found! " +
+                    "Are you sure you received the bundle name through the OnAssetBundleAvailable delegate or the GetAvailableAssetBunldes method",
+                    LogType.Error);
+            }
         }
     }
 
