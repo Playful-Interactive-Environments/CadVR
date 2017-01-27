@@ -30,3 +30,13 @@ sysinfo.txt
 # Builds
 *.apk
 *.unitypackage
+Assets/cadvr/Scenes/scn_main/Lightmap-0_comp_dir.exr
+Assets/cadvr/Scenes/scn_main/Lightmap-0_comp_dir.exr.meta
+Assets/cadvr/Scenes/scn_main/Lightmap-0_comp_light.exr
+Assets/cadvr/Scenes/scn_main/Lightmap-0_comp_light.exr.meta
+Assets/cadvr/Scenes/scn_main/Lightmap-1_comp_dir.exr
+Assets/cadvr/Scenes/scn_main/Lightmap-1_comp_dir.exr.meta
+Assets/cadvr/Scenes/scn_main/Lightmap-1_comp_light.exr
+Assets/cadvr/Scenes/scn_main/Lightmap-1_comp_light.exr.meta
+Assets/cadvr/Scenes/scn_main/ReflectionProbe-0.exr
+Assets/cadvr/Scenes/scn_main/ReflectionProbe-0.exr.meta

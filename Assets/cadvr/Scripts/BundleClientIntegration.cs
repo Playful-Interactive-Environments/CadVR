@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-[AddComponentMenu("Cad Vr/Test")]
+[AddComponentMenu("Cad Vr/Bundle Client Logger")]
 public class BundleClientIntegration : MonoBehaviour {
 
     private static BundleClient.OnLogDelegate defautlbundleClientLogger = (string msg, LogType logType) =>

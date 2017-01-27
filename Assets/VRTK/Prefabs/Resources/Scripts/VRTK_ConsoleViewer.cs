@@ -35,6 +35,7 @@ namespace VRTK
         private const string NEWLINE = "\n";
         private int lineBuffer = 50;
         private int currentBuffer;
+        private int threadedBuffer;
         private string lastMessage;
         private string logOutputThreaded = "";
         private bool collapseLog = false;
@@ -55,6 +56,7 @@ namespace VRTK
         {
             consoleOutput.text = "";
             currentBuffer = 0;
+            threadedBuffer = 0;
             lastMessage = "";
         }
 
@@ -98,6 +100,7 @@ namespace VRTK
             {
                 logOutputThreaded += output;
                 lastMessage = output;
+                ++threadedBuffer;
             }
         }
 
@@ -121,9 +124,11 @@ namespace VRTK
         private void UpdateLogWindow(string bufferedLogOutput)
         {
             consoleOutput.text += bufferedLogOutput;
-            consoleRect.sizeDelta = new Vector2(consoleOutput.preferredWidth, consoleOutput.preferredHeight);
+            //consoleOutput.preferredWidth
+            //consoleRect.sizeDelta = new Vector2(consoleOutput.preferredWidth, consoleOutput.preferredHeight);
             scrollWindow.verticalNormalizedPosition = 0;
-            currentBuffer++;
+            currentBuffer+= threadedBuffer;
+            threadedBuffer = 0;
             if (currentBuffer >= lineBuffer)
             {
                 var lines = Regex.Split(consoleOutput.text, NEWLINE).Skip(lineBuffer / 2);

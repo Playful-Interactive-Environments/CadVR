@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using VRTK;
 using VRTK.GrabAttachMechanics;
@@ -29,5 +28,7 @@ public class GameObjectInstancer : MonoBehaviour {
         secondary.ungrabDistance = 100.0f;
 
         instance.transform.localScale = Vector3.one * 0.01f;
+        instance.transform.position = transform.position;
+        instance.transform.rotation = transform.rotation;
     }
 }
