@@ -147,10 +147,11 @@ GameObject:
   - component: {fileID: 114173706204792544}
   - component: {fileID: 114862867752056496}
   - component: {fileID: 114769113627528198}
+  - component: {fileID: 114663709013923898}
   m_Layer: 0
   m_Name: ObjectList
   m_TagString: Untagged
-  m_Icon: {fileID: 0}
+  m_Icon: {fileID: 2974397684917235467, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
@@ -233,7 +234,6 @@ GameObject:
   - component: {fileID: 114174681234236386}
   - component: {fileID: 114457441213018958}
   - component: {fileID: 114182246632491298}
-  - component: {fileID: 114387788800157870}
   m_Layer: 5
   m_Name: ObjectList
   m_TagString: Untagged
@@ -247,14 +247,14 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1658014722702518}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: -0.07330925, y: 0.9157042, z: 0.19551745, w: 0.34334332}
+  m_LocalPosition: {x: -0.767, y: 0.969, z: 1.206}
   m_LocalScale: {x: 0.6156265, y: 0.48051098, z: 0.021277277}
   m_Children:
   - {fileID: 224034991154997656}
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: -24.105001, y: 138.893, z: 0}
 --- !u!23 &23925007057489008
 MeshRenderer:
   m_ObjectHideFlags: 1
@@ -450,35 +450,6 @@ MonoBehaviour:
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
---- !u!114 &114387788800157870
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1942503585702610}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a3abaf4521bf2344ea21ed3020b98eb2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  disableWhenIdle: 1
-  touchHighlightColor: {r: 0.7411765, g: 1, b: 0.8392157, a: 1}
-  allowedTouchControllers: 0
-  isGrabbable: 1
-  holdButtonToGrab: 1
-  stayGrabbedOnTeleport: 1
-  validDrop: 1
-  grabOverrideButton: 0
-  allowedGrabControllers: 0
-  grabAttachMechanicScript: {fileID: 0}
-  secondaryGrabActionScript: {fileID: 0}
-  isUsable: 0
-  holdButtonToUse: 1
-  useOnlyIfGrabbed: 0
-  pointerActivatesUseAction: 0
-  useOverrideButton: 0
-  allowedUseControllers: 0
-  usingState: 0
 --- !u!114 &114423041903861860
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -498,7 +469,7 @@ MonoBehaviour:
   m_ChildAlignment: 1
   m_Spacing: 0
   m_ChildForceExpandWidth: 1
-  m_ChildForceExpandHeight: 1
+  m_ChildForceExpandHeight: 0
   m_ChildControlWidth: 1
   m_ChildControlHeight: 0
 --- !u!114 &114457441213018958
@@ -690,6 +661,21 @@ MonoBehaviour:
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
+--- !u!114 &114663709013923898
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1658014722702518}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c08517e04830d6d44a13c5ea5f574181, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  active: 1
+  thickness: 1
+  customOutlineModel: {fileID: 0}
+  customOutlineModelPath: 
 --- !u!114 &114687591980295478
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -998,7 +984,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -0.000091552734}
+  m_AnchoredPosition: {x: 0, y: -0.000015258789}
   m_SizeDelta: {x: 593, y: 451}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &224221129356698512

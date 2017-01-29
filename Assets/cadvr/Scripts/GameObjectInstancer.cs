@@ -26,10 +26,8 @@ public class GameObjectInstancer : MonoBehaviour {
         VRTK_ChildOfControllerGrabAttach primary = instance.AddComponent<VRTK_ChildOfControllerGrabAttach>();
         interactible.grabAttachMechanicScript = primary;
         primary.precisionGrab = true;
-        VRTK_AxisScaleGrabAction secondary = instance.AddComponent<VRTK_AxisScaleGrabAction>();
+        VRTK_PrecisionScaleAction secondary = instance.AddComponent<VRTK_PrecisionScaleAction>();
         interactible.secondaryGrabActionScript = secondary;
-        secondary.uniformScaling = true;
-        secondary.ungrabDistance = 100.0f;
         VRTK_MaterialColorSwapHighlighter highlighter = selected.AddComponent<VRTK_MaterialColorSwapHighlighter>();
         highlighter.customMaterial = highlighterMaterial;
 

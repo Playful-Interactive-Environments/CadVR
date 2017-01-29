@@ -131,7 +131,8 @@ namespace VRTK
             threadedBuffer = 0;
             if (currentBuffer >= lineBuffer)
             {
-                var lines = Regex.Split(consoleOutput.text, NEWLINE).Skip(lineBuffer / 2);
+                string[] allLines = Regex.Split(consoleOutput.text, NEWLINE);
+                var lines = allLines.Skip(allLines.Length - (lineBuffer / 2));
                 consoleOutput.text = string.Join(NEWLINE, lines.ToArray());
                 currentBuffer = lineBuffer / 2;
             }
