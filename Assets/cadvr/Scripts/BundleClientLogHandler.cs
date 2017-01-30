@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 [AddComponentMenu("Cad Vr/Bundle Client Logger")]
-public class BundleClientIntegration : MonoBehaviour {
+public class BundleClientLogHandler : MonoBehaviour {
 
     private static BundleClient.OnLogDelegate defautlbundleClientLogger = (string msg, LogType logType) =>
     {
@@ -27,18 +27,4 @@ public class BundleClientIntegration : MonoBehaviour {
         BundleClient.OnDownloaderStarted += defaultOnDownloaderStartedHandler;
     }
 
-    private void Awake()
-    {
-
-    }
-
-    // Use this for initialization
-    void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
 }

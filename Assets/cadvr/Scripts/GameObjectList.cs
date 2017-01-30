@@ -13,29 +13,51 @@ public class GameObjectList : MonoBehaviour {
     [SerializeField]
     private AutoLoadAllAvailableBundles autoLoader;
     [SerializeField]
-    private Button buttonPrefab;
-    private List<GameObject> goList = new List<GameObject>();
-    private Button placeholderButton;
+    private GameObjectListButton buttonPrefab;
+
+    private Dictionary<string, GameObjectListButton> buttons = new Dictionary<string, GameObjectListButton>();
+    private GameObjectListButton placeholderButton;
 
     private bool isPlaceholderButtonUsed = false;
 
 	private void Awake () {
         autoLoader.OnGameObjectLoaded += GameObjectLoadedHandler;
 
-        placeholderButton = Instantiate<GameObject>(buttonPrefab.gameObject).GetComponent<Button>();
-        placeholderButton.interactable = false;
-        Text text = placeholderButton.GetComponentInChildren<Text>();
-        if (text)
-        {
-            text.text = "No Objects yet";
-        }
+        autoLoader.OnPreAssetLoad += AssetPreLoadedHandler;
 
+
+        autoLoader.OnAssetLoadProgress += AssetProgressHandler;
+
+        placeholderButton = Instantiate<GameObject>(buttonPrefab.gameObject).GetComponent<GameObjectListButton>();
+        placeholderButton.SetEnabled(false);
+        placeholderButton.setText("No Objects yet");
         placeholderButton.transform.SetParent(transform, false);
         placeholderButton.transform.SetAsLastSibling();
         isPlaceholderButtonUsed = true;
     }
 
-    private void GameObjectLoadedHandler(GameObject go)
+    private void AssetPreLoadedHandler(string assetBundleName, string assetName)
+    {
+        GameObjectListButton newButton = Instantiate<GameObject>(buttonPrefab.gameObject).GetComponent<GameObjectListButton>();
+        newButton.SetEnabled(false);
+        newButton.setText("Loading...");
+        newButton.transform.SetParent(transform, false);
+        newButton.transform.SetAsLastSibling();
+        Debug.Log("Adding asset " + assetBundleName + assetName);
+        buttons.Add(assetBundleName + assetName,  newButton);
+    }
+
+    private void AssetProgressHandler(string assetBundleName, string assetName, float progress)
+    {
+        GameObjectListButton button;
+        if (buttons.TryGetValue(assetBundleName + assetName, out button)) {
+            button.SetProgress(progress);
+        }
+
+        Debug.Log("Progress: " + progress + "  Bundle: " + assetBundleName + "  Asset: " + assetName);
+    }
+
+    private void GameObjectLoadedHandler(string assetBundleName, string assetName, GameObject go)
     {
         if (isPlaceholderButtonUsed)
         {
@@ -43,23 +65,22 @@ public class GameObjectList : MonoBehaviour {
             isPlaceholderButtonUsed = false;
         }
 
-        Button newButton = Instantiate<GameObject>(buttonPrefab.gameObject).GetComponent<Button>();
-        newButton.interactable = true;
-        Text text = newButton.GetComponentInChildren<Text>();
-        if (text)
+        GameObjectListButton button;
+        if (buttons.TryGetValue(assetBundleName + assetName, out button))
         {
-            text.text = go.name;
-        }
-
-        newButton.transform.SetParent(transform, false);
-        newButton.transform.SetAsLastSibling();
-
-        // bind game object to the button via a closure
-        newButton.onClick.AddListener(() => {
-            if (OnSelected != null)
+            button.setText(go.name);
+            button.SetEnabled(true);
+            // bind game object to the button via a closure
+            button.AddListener(() =>
             {
-                OnSelected(go);
-            }
-        });
+                if (OnSelected != null)
+                {
+                    OnSelected(go);
+                }
+            });
+        } else
+        {
+            Debug.LogError("Loaded game object has not entry in the button list. This should not happen: " + assetBundleName + assetName);
+        }
     }
 }

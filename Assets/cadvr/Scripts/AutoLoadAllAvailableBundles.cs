@@ -1,11 +1,29 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 [AddComponentMenu("Cad Vr/AutoLoadAllAvailableBundles")]
 public class AutoLoadAllAvailableBundles : MonoBehaviour {
 
-    public delegate void OnGameObjectLoadedDelegate(GameObject go);
+    public delegate void OnGameObjectLoadedDelegate(string assetBundleName, string assetName, GameObject go);
+    /// <summary>
+    /// Is called if an asset which is a game object has finished loading
+    /// </summary>
     public OnGameObjectLoadedDelegate OnGameObjectLoaded;
+
+    public delegate void OnPreAssetLoadDelegate(string assetBundleName, string assetName);
+    /// <summary>
+    /// Is called before a new asset will be loaded
+    /// </summary>
+    public OnPreAssetLoadDelegate OnPreAssetLoad;
+
+    public delegate void OnAssetLoadProgressDelegate(string assetBundleName, string assetName, float progress);
+    /// <summary>
+    /// Is called when an asset has progressed loading
+    /// </summary>
+    public OnAssetLoadProgressDelegate OnAssetLoadProgress;
+
 
     [SerializeField]
     private List<BaseGameObjectProcessor> preprocessors = new List<BaseGameObjectProcessor>();
@@ -24,22 +42,51 @@ public class AutoLoadAllAvailableBundles : MonoBehaviour {
         while (assetBundlesToLoad.Count != 0)
         {
             string bundle = assetBundlesToLoad.Dequeue();
-            StartCoroutine(BundleClient.GetAssetBundle(bundle, receiveAssetBundle, (progress) => {
-                Debug.Log(Mathf.RoundToInt(progress * 100) + "% Loading Progress (Bundle: \"" + bundle + "\")");
+            StartCoroutine(BundleClient.GetAssetBundle(bundle, ReceiveAssetBundle, (progress) => {
+                Debug.Log(Mathf.RoundToInt(progress * 100) + " % Loading Progress (Bundle: \"" + bundle + "\")");
             }));
         }
     }
 
-    private void receiveAssetBundle(AssetBundle assetBundle)
+    // The asset bundle loaded callback
+    private void ReceiveAssetBundle(AssetBundle assetBundle)
     {
-        foreach (string asset in assetBundle.GetAllAssetNames())
+        // pre asset load
+        if (OnPreAssetLoad != null)
         {
-            Debug.Log("The loaded asset bundle contains the asset \"" + asset + "\"");
+            foreach (string assetName in assetBundle.GetAllAssetNames())
+            {
+                OnPreAssetLoad(assetBundle.name, Path.GetFileNameWithoutExtension(assetName).ToLower());
+            }
         }
 
-        Object[] allAssets = assetBundle.LoadAllAssets();
+        // asset load
+        StartCoroutine(LoadAllAssets(assetBundle));
+    }
 
-        foreach(Object asset in allAssets)
+    private IEnumerator LoadAllAssets(AssetBundle assetBundle)
+    {
+        AssetBundleRequest request = assetBundle.LoadAllAssetsAsync();
+
+        if (OnAssetLoadProgress != null)
+        {
+            // call progress delegate every frame
+            while (!request.isDone) {
+                foreach(string assetName in assetBundle.GetAllAssetNames())
+                {
+                    OnAssetLoadProgress(assetBundle.name, Path.GetFileNameWithoutExtension(assetName).ToLower(), request.progress);
+                }
+
+                yield return null;
+            }
+        } else
+        {
+            // yield the request directly
+            yield return request;
+        }
+        
+        // post asset load
+        foreach(Object asset in request.allAssets)
         {
             if (asset is GameObject && OnGameObjectLoaded != null)
             {
@@ -48,8 +95,11 @@ public class AutoLoadAllAvailableBundles : MonoBehaviour {
                 {
                     processor.Process(go);
                 }
-                OnGameObjectLoaded(go);
+                OnGameObjectLoaded(assetBundle.name, asset.name.ToLower(), go);
             }
         }
     }
+
+
+
 }

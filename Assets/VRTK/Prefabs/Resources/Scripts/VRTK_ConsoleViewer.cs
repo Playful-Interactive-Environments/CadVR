@@ -124,8 +124,8 @@ namespace VRTK
         private void UpdateLogWindow(string bufferedLogOutput)
         {
             consoleOutput.text += bufferedLogOutput;
-            //consoleOutput.preferredWidth
-            //consoleRect.sizeDelta = new Vector2(consoleOutput.preferredWidth, consoleOutput.preferredHeight);
+
+            consoleRect.sizeDelta = new Vector2(consoleOutput.preferredWidth, consoleOutput.preferredHeight) * 0.6f;
             scrollWindow.verticalNormalizedPosition = 0;
             currentBuffer+= threadedBuffer;
             threadedBuffer = 0;

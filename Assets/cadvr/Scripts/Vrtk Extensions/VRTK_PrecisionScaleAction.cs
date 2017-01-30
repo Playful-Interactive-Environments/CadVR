@@ -8,14 +8,14 @@
     /// </summary>
     public class VRTK_PrecisionScaleAction : VRTK_BaseGrabAction
     {
+        //protected new bool isSwappable = true;
+
         private Vector3 initialScale;
         private Quaternion initialRotation;
         private Vector3 AMt1;
         private Vector3 ABt1;
         private float ABt1Magnitude;
-        private Vector3 Mt1;
         private Vector3 At1;
-        private Vector3 Bt1;
 
 
         /// <summary>
@@ -28,36 +28,64 @@
         /// <param name="secondaryGrabPoint">The point on the object where the secondary controller initially grabbed the object.</param>
         public override void Initialise(VRTK_InteractableObject currentGrabbdObject, VRTK_InteractGrab currentPrimaryGrabbingObject, VRTK_InteractGrab currentSecondaryGrabbingObject, Transform primaryGrabPoint, Transform secondaryGrabPoint)
         {
-            base.Initialise(currentGrabbdObject, currentPrimaryGrabbingObject, currentSecondaryGrabbingObject, primaryGrabPoint, secondaryGrabPoint);
+            // generate own grabpoints because the one passed by vrtk is parented under the grabbed object.
+            // these ones move with the grabbing objects
+
+            GameObject primaryGo = new GameObject("primary grab point");
+            primaryGo.transform.position = primaryGrabPoint.position;
+            primaryGo.transform.SetParent(currentPrimaryGrabbingObject.transform, true);
+            Transform primaryGlobalGrabPoint = primaryGo.transform;
+
+            GameObject secondaryGo = new GameObject("secondary grab point");
+            secondaryGo.transform.position = secondaryGrabPoint.position;
+            secondaryGo.transform.SetParent(currentSecondaryGrabbingObject.transform, true);
+            Transform secondaryGlobalGrabPoint = secondaryGo.transform;
+
+            base.Initialise(currentGrabbdObject, currentPrimaryGrabbingObject, currentSecondaryGrabbingObject, primaryGlobalGrabPoint, secondaryGlobalGrabPoint);
+            InitTransformation();
+        }
+
+        private void InitTransformation()
+        {
             initialScale = grabbedObject.transform.localScale;
             initialRotation = grabbedObject.transform.rotation;
-            // the pivot of the grabbed object
-            Mt1 = grabbedObject.transform.position;
-            // the initial grab position of first controller
-            At1 = primaryInitialGrabPoint.position;
-            Bt1 = secondaryInitialGrabPoint.position;
 
-            AMt1 = Mt1 - At1;
-            ABt1 = Bt1 - At1;
+            Vector3 At1 = primaryInitialGrabPoint.position;
+
+            AMt1 = grabbedObject.transform.position - At1;
+            ABt1 = secondaryInitialGrabPoint.position - At1;
             ABt1Magnitude = ABt1.magnitude;
-    }
+        }
+
+        public override void ResetAction()
+        {
+            Destroy(secondaryInitialGrabPoint.gameObject);
+            Destroy(primaryInitialGrabPoint.gameObject);
+            base.ResetAction();
+        }
 
         /// <summary>
         /// The ProcessUpdate method runs in every Update on the Interactable Object whilst it is being grabbed by a secondary controller.
         /// </summary>
         public override void ProcessUpdate()
         {
-            Vector3 ABt2 = secondaryInitialGrabPoint.position - primaryInitialGrabPoint.position;
+            if (initialised)
+            {
+                Vector3 At2 = primaryInitialGrabPoint.position;
+                Vector3 Bt2 = secondaryInitialGrabPoint.position;
+                Vector3 ABt2 = Bt2 - At2;
+                Debug.DrawLine(At2, Bt2);
 
-            // scale
-            float scaleFactor = ABt2.magnitude / ABt1Magnitude;
-            Vector3 newScale = initialScale * scaleFactor;
-            grabbedObject.transform.localScale = newScale;
-            // rotation
-            Quaternion rotationDifference = Quaternion.FromToRotation(ABt1, ABt2);
-            grabbedObject.transform.rotation = initialRotation * rotationDifference;
-            // tranformation
-            grabbedObject.transform.position = At1 + ((rotationDifference * AMt1) * scaleFactor);
+                // scale
+                float scaleFactor = ABt2.magnitude / ABt1Magnitude;
+                grabbedObject.transform.localScale = initialScale * scaleFactor;
+                // rotation
+                Quaternion rotationDifference = Quaternion.FromToRotation(ABt1, ABt2);
+                grabbedObject.transform.rotation = rotationDifference * initialRotation;
+                // tranformation
+                grabbedObject.transform.position = At2 + ((rotationDifference * AMt1) * scaleFactor);
+            }
         }
     }
+
 }
